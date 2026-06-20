@@ -1,0 +1,679 @@
+:root {
+  --bg-primary: #022c22; /* Deep Islamic Emerald Green */
+  --bg-secondary: #064e3b; /* Dark Green */
+  --bg-card: rgba(6, 78, 59, 0.45); /* Translucent Green */
+  --bg-card-hover: rgba(4, 120, 87, 0.6);
+  --border-color: rgba(217, 119, 6, 0.15); /* Soft Gold border */
+  --border-hover: rgba(245, 158, 11, 0.5); /* Glowing Gold border */
+  
+  --text-primary: #f0fdf4; /* Mint white */
+  --text-secondary: #a7f3d0; /* Soft green-mint */
+  --text-muted: #047857;
+  
+  --primary: #10b981; /* Glowing Emerald */
+  --primary-glow: rgba(16, 185, 129, 0.2);
+  --secondary: #f59e0b; /* Rich Gold */
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-orange: #f97316;
+  --accent-teal: #14b8a6;
+  --accent-gold: #f59e0b;
+  
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #d97706 100%); /* Emerald to Gold */
+  --gradient-secondary: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  --gradient-orange: linear-gradient(135deg, #f97316 0%, #f59e0b 100%);
+  --gradient-purple: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-card: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(6, 78, 59, 0.1) 100%);
+  
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 30px -4px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 40px -6px rgba(0, 0, 0, 0.8);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  
+  --font-sans: var(--font-geist-sans), Inter, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f0fdf4; /* Minty light background */
+  --bg-secondary: #d1fae5;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(4, 120, 87, 0.1);
+  --border-hover: rgba(217, 119, 6, 0.5);
+  
+  --text-primary: #064e3b;
+  --text-secondary: #047857;
+  --text-muted: #10b981;
+  
+  --primary: #059669;
+  --primary-glow: rgba(5, 150, 105, 0.15);
+  --secondary: #d97706;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #d97706 100%);
+  --gradient-secondary: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  
+  --shadow-sm: 0 2px 8px -2px rgba(4, 120, 87, 0.05);
+  --shadow-md: 0 8px 30px -4px rgba(4, 120, 87, 0.08);
+  --shadow-lg: 0 16px 40px -6px rgba(4, 120, 87, 0.12);
+}
+
+/* ==========================================================================
+   COUNTRY THEMES (DYNAMIC LAYOUT MORPHING)
+   ========================================================================== */
+
+/* 1. Saudi Arabia: Deep Oasis Green & Royal Gold */
+[data-country-theme="saudi-arabia"] {
+  --bg-primary: #022c22;
+  --bg-secondary: #064e3b;
+  --bg-card: rgba(6, 78, 59, 0.45);
+  --bg-card-hover: rgba(4, 120, 87, 0.6);
+  --border-color: rgba(217, 119, 6, 0.2);
+  --border-hover: rgba(245, 158, 11, 0.6);
+  --primary: #10b981;
+  --secondary: #f59e0b;
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #d97706 100%);
+  --shape-gradient-1-start: #f59e0b;
+  --shape-gradient-1-end: #b45309;
+  --shape-gradient-2-start: #10b981;
+  --shape-gradient-2-end: #047857;
+  --shape-gradient-3-start: #fbbf24;
+  --shape-gradient-3-end: #d97706;
+}
+[data-theme="light"][data-country-theme="saudi-arabia"] {
+  --bg-primary: #f0fdf4;
+  --bg-secondary: #d1fae5;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(4, 120, 87, 0.15);
+  --border-hover: rgba(217, 119, 6, 0.5);
+  --primary: #059669;
+  --secondary: #d97706;
+}
+
+/* 2. Turkey: Turkish Turquoise & Bosphorus Blue */
+[data-country-theme="turkey"] {
+  --bg-primary: #083344; /* Deep Cyan/Ocean */
+  --bg-secondary: #164e63;
+  --bg-card: rgba(22, 78, 99, 0.45);
+  --bg-card-hover: rgba(21, 94, 117, 0.6);
+  --border-color: rgba(14, 116, 144, 0.2);
+  --border-hover: rgba(6, 182, 212, 0.6);
+  --primary: #06b6d4; /* Turquoise Blue */
+  --primary-glow: rgba(6, 182, 212, 0.2);
+  --secondary: #f59e0b; /* Rose Gold */
+  --gradient-primary: linear-gradient(135deg, #0891b2 0%, #d97706 100%);
+  --shape-gradient-1-start: #f59e0b;
+  --shape-gradient-1-end: #b45309;
+  --shape-gradient-2-start: #06b6d4;
+  --shape-gradient-2-end: #0891b2;
+  --shape-gradient-3-start: #22d3ee;
+  --shape-gradient-3-end: #0891b2;
+}
+[data-theme="light"][data-country-theme="turkey"] {
+  --bg-primary: #ecfeff;
+  --bg-secondary: #cffafe;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(8, 145, 178, 0.15);
+  --border-hover: rgba(6, 182, 212, 0.5);
+  --primary: #0891b2;
+  --secondary: #d97706;
+}
+
+/* 3. Morocco: Terracotta Amber & Majorelle Cobalt Blue */
+[data-country-theme="morocco"] {
+  --bg-primary: #451a03; /* Deep Terracotta */
+  --bg-secondary: #78350f;
+  --bg-card: rgba(120, 53, 15, 0.45);
+  --bg-card-hover: rgba(180, 83, 9, 0.6);
+  --border-color: rgba(217, 119, 6, 0.2);
+  --border-hover: rgba(37, 99, 235, 0.6);
+  --primary: #f97316;
+  --primary-glow: rgba(249, 115, 22, 0.2);
+  --secondary: #2563eb;
+  --gradient-primary: linear-gradient(135deg, #ea580c 0%, #2563eb 100%);
+  --shape-gradient-1-start: #2563eb;
+  --shape-gradient-1-end: #1d4ed8;
+  --shape-gradient-2-start: #f97316;
+  --shape-gradient-2-end: #c2410c;
+  --shape-gradient-3-start: #fb923c;
+  --shape-gradient-3-end: #ea580c;
+}
+[data-theme="light"][data-country-theme="morocco"] {
+  --bg-primary: #fff7ed;
+  --bg-secondary: #ffedd5;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(249, 115, 22, 0.15);
+  --border-hover: rgba(37, 99, 235, 0.5);
+  --primary: #ea580c;
+  --secondary: #2563eb;
+}
+
+/* 4. Spain: Andalusian Crimson & Moorish Gold */
+[data-country-theme="spain"] {
+  --bg-primary: #1e0b0b;
+  --bg-secondary: #450a0a;
+  --bg-card: rgba(69, 10, 10, 0.45);
+  --bg-card-hover: rgba(127, 29, 29, 0.6);
+  --border-color: rgba(220, 38, 38, 0.2);
+  --border-hover: rgba(245, 158, 11, 0.6);
+  --primary: #ef4444;
+  --primary-glow: rgba(239, 68, 68, 0.2);
+  --secondary: #f59e0b;
+  --gradient-primary: linear-gradient(135deg, #dc2626 0%, #d97706 100%);
+  --shape-gradient-1-start: #f59e0b;
+  --shape-gradient-1-end: #b45309;
+  --shape-gradient-2-start: #ef4444;
+  --shape-gradient-2-end: #991b1b;
+  --shape-gradient-3-start: #f87171;
+  --shape-gradient-3-end: #dc2626;
+}
+[data-theme="light"][data-country-theme="spain"] {
+  --bg-primary: #fef2f2;
+  --bg-secondary: #fee2e2;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(220, 38, 38, 0.15);
+  --border-hover: rgba(217, 119, 6, 0.5);
+  --primary: #dc2626;
+  --secondary: #d97706;
+}
+
+/* 5. Japan: Cherry Blossom Pink & Zen Slate Grey */
+[data-country-theme="japan"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: rgba(30, 41, 59, 0.45);
+  --bg-card-hover: rgba(51, 65, 85, 0.6);
+  --border-color: rgba(148, 163, 184, 0.2);
+  --border-hover: rgba(236, 72, 153, 0.6);
+  --primary: #ec4899;
+  --primary-glow: rgba(236, 72, 153, 0.2);
+  --secondary: #94a3b8;
+  --gradient-primary: linear-gradient(135deg, #db2777 0%, #64748b 100%);
+  --shape-gradient-1-start: #ec4899;
+  --shape-gradient-1-end: #be185d;
+  --shape-gradient-2-start: #94a3b8;
+  --shape-gradient-2-end: #475569;
+  --shape-gradient-3-start: #f472b6;
+  --shape-gradient-3-end: #db2777;
+}
+[data-theme="light"][data-country-theme="japan"] {
+  --bg-primary: #fdf2f8;
+  --bg-secondary: #fce7f3;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(148, 163, 184, 0.15);
+  --border-hover: rgba(236, 72, 153, 0.5);
+  --primary: #db2777;
+  --secondary: #64748b;
+}
+
+/* 6. United Arab Emirates: Luxury Champagne Gold & Sandstone Dune */
+[data-country-theme="united-arab-emirates"] {
+  --bg-primary: #0a0a16;
+  --bg-secondary: #111126;
+  --bg-card: rgba(17, 17, 38, 0.45);
+  --bg-card-hover: rgba(26, 26, 54, 0.6);
+  --border-color: rgba(217, 119, 6, 0.25);
+  --border-hover: rgba(251, 191, 36, 0.7);
+  --primary: #fbbf24;
+  --primary-glow: rgba(251, 191, 36, 0.2);
+  --secondary: #cbd5e1;
+  --gradient-primary: linear-gradient(135deg, #d97706 0%, #cbd5e1 100%);
+  --shape-gradient-1-start: #fbbf24;
+  --shape-gradient-1-end: #9a3412;
+  --shape-gradient-2-start: #cbd5e1;
+  --shape-gradient-2-end: #64748b;
+  --shape-gradient-3-start: #fef08a;
+  --shape-gradient-3-end: #fbbf24;
+}
+[data-theme="light"][data-country-theme="united-arab-emirates"] {
+  --bg-primary: #fafaf9;
+  --bg-secondary: #f5f5f4;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(217, 119, 6, 0.2);
+  --border-hover: rgba(251, 191, 36, 0.6);
+  --primary: #d97706;
+  --secondary: #64748b;
+}
+
+/* 7. Egypt: Desert Amber & Ancient Nile Lapis Blue */
+[data-country-theme="egypt"] {
+  --bg-primary: #1c0f00;
+  --bg-secondary: #2d1500;
+  --bg-card: rgba(45, 21, 0, 0.45);
+  --bg-card-hover: rgba(69, 32, 0, 0.6);
+  --border-color: rgba(180, 83, 9, 0.25);
+  --border-hover: rgba(2, 132, 199, 0.6);
+  --primary: #f59e0b;
+  --primary-glow: rgba(245, 158, 11, 0.2);
+  --secondary: #0ea5e9;
+  --gradient-primary: linear-gradient(135deg, #b45309 0%, #0284c7 100%);
+  --shape-gradient-1-start: #0ea5e9;
+  --shape-gradient-1-end: #0369a1;
+  --shape-gradient-2-start: #f59e0b;
+  --shape-gradient-2-end: #b45309;
+  --shape-gradient-3-start: #fbbf24;
+  --shape-gradient-3-end: #d97706;
+}
+[data-theme="light"][data-country-theme="egypt"] {
+  --bg-primary: #fffbeb;
+  --bg-secondary: #fef3c7;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(180, 83, 9, 0.15);
+  --border-hover: rgba(2, 132, 199, 0.5);
+  --primary: #b45309;
+  --secondary: #0284c7;
+}
+
+/* 8. Malaysia: Tropical Rainforest Emerald & Golden Hibiscus */
+[data-country-theme="malaysia"] {
+  --bg-primary: #022c22;
+  --bg-secondary: #064e3b;
+  --bg-card: rgba(6, 78, 59, 0.45);
+  --bg-card-hover: rgba(4, 120, 87, 0.6);
+  --border-color: rgba(16, 185, 129, 0.2);
+  --border-hover: rgba(251, 191, 36, 0.6);
+  --primary: #10b981;
+  --primary-glow: rgba(16, 185, 129, 0.2);
+  --secondary: #fbbf24;
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #fbbf24 100%);
+  --shape-gradient-1-start: #fbbf24;
+  --shape-gradient-1-end: #d97706;
+  --shape-gradient-2-start: #10b981;
+  --shape-gradient-2-end: #064e3b;
+  --shape-gradient-3-start: #34d399;
+  --shape-gradient-3-end: #059669;
+}
+[data-theme="light"][data-country-theme="malaysia"] {
+  --bg-primary: #f0fdf4;
+  --bg-secondary: #d1fae5;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(16, 185, 129, 0.15);
+  --border-hover: rgba(217, 119, 6, 0.5);
+  --primary: #059669;
+  --secondary: #d97706;
+}
+
+/* 9. Indonesia: Volcanic Crimson & Tropical Sea Teal */
+[data-country-theme="indonesia"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: rgba(30, 41, 59, 0.45);
+  --bg-card-hover: rgba(51, 65, 85, 0.6);
+  --border-color: rgba(225, 29, 72, 0.2);
+  --border-hover: rgba(13, 148, 136, 0.6);
+  --primary: #f43f5e;
+  --primary-glow: rgba(244, 63, 94, 0.2);
+  --secondary: #0d9488;
+  --gradient-primary: linear-gradient(135deg, #e11d48 0%, #0d9488 100%);
+  --shape-gradient-1-start: #0d9488;
+  --shape-gradient-1-end: #0f766e;
+  --shape-gradient-2-start: #f43f5e;
+  --shape-gradient-2-end: #be123c;
+  --shape-gradient-3-start: #fb7185;
+  --shape-gradient-3-end: #e11d48;
+}
+[data-theme="light"][data-country-theme="indonesia"] {
+  --bg-primary: #fff1f2;
+  --bg-secondary: #ffe4e6;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(225, 29, 72, 0.15);
+  --border-hover: rgba(13, 148, 136, 0.5);
+  --primary: #e11d48;
+  --secondary: #0d9488;
+}
+
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 119, 6, 0.2) transparent;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease, box-shadow 0.25s ease;
+}
+
+/* Custom Scrollbar for Webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(217, 119, 6, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(217, 119, 6, 0.4);
+}
+
+html,
+body {
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+[data-theme="light"] body {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(5, 150, 105, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(217, 119, 6, 0.03) 0%, transparent 40%);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.glass-panel-interactive {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-interactive:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Color accents and highlights */
+.gradient-text-primary {
+  background: var(--gradient-primary);
+  WebkitBackgroundClip: text;
+  WebkitTextFillColor: transparent;
+}
+
+.gradient-text-secondary {
+  background: var(--gradient-secondary);
+  WebkitBackgroundClip: text;
+  WebkitTextFillColor: transparent;
+}
+
+.gradient-text-orange {
+  background: var(--gradient-orange);
+  WebkitBackgroundClip: text;
+  WebkitTextFillColor: transparent;
+}
+
+/* Responsive Dashboard Classes */
+.resp-dashboard {
+  display: flex;
+  min-height: 100vh;
+}
+
+.resp-sidebar {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  border-right: 1px solid var(--border-color);
+  border-radius: 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+}
+
+.resp-main {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px 6%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  transition: margin-left 0.3s ease, padding 0.3s ease;
+}
+
+/* Mobile Sidebar Toggle styling */
+.mobile-header {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--gradient-primary);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.4);
+  opacity: 0.95;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-secondary);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.btn-danger {
+  background: var(--danger);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Parallax 3D Elements container style */
+.parallax-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.parallax-shape {
+  position: absolute;
+  opacity: 0.12;
+  transition: transform 0.1s ease-out;
+}
+
+[data-theme="light"] .parallax-shape {
+  opacity: 0.06;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Responsiveness Breakpoints */
+@media (max-width: 992px) {
+  .resp-sidebar {
+    transform: translateX(-100%);
+  }
+  .resp-sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay.open {
+    display: block;
+  }
+  .resp-main {
+    margin-left: 0;
+    padding: 96px 20px 40px;
+  }
+  .mobile-header {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .explorer-layout-flex {
+    flex-direction: column !important;
+  }
+  .explorer-nav-panel {
+    width: 100% !important;
+  }
+  .expense-layout-flex {
+    flex-direction: column !important;
+  }
+  .expense-summary-panel {
+    width: 100% !important;
+  }
+  .country-additions-flex {
+    flex-direction: column !important;
+  }
+}
+
+/* Globe and Landing Page Grid Responsiveness overrides */
+@media (max-width: 900px) {
+  .globe-details-panel-floating {
+    position: relative !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    margin: 20px auto 0 !important;
+  }
+  .landing-hero-grid {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    padding: 100px 5% 50px !important;
+  }
+  .landing-hero-content-floating {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    margin-bottom: 30px !important;
+  }
+  .landing-hero-globe-fullsize {
+    position: relative !important;
+    height: 450px !important;
+    margin-bottom: 20px !important;
+  }
+}
