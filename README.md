@@ -1,202 +1,129 @@
-# Travel City Explorer API Boilerplate
+# TravelCity 🕌
 
-A beginner-friendly Node.js, Express, MongoDB and Mongoose REST API project for a Travel Guide / City Explorer application.
+**TravelCity** is a premium, interactive travel platform and itinerary planner designed with a focus on exploring cultural and Islamic heritage spots around the globe. The application features a stunning interactive 3D rotating globe, live travel routing, day-by-day itinerary builders, real-time expense calculators, local guide directories, and verified halal guides.
 
-This boilerplate is designed for a team exercise where each developer owns one model and writes CRUD APIs in their own Git branch.
+Live URL: **[https://frontend-beryl-zeta-82.vercel.app](https://frontend-beryl-zeta-82.vercel.app)**  
+Backend API URL: **[https://travel-city-sable.vercel.app](https://travel-city-sable.vercel.app)**
 
-## Tech Stack
+---
 
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- REST APIs
-- Git and GitHub branching workflow
+## 🌟 Key Features
 
-## Project Structure
+### 1. Immersive 3D Interactive Globe
+- **Realistic Borders**: Leverages D3 Orthographic projections and TopoJSON boundary maps to render accurate coastlines and political borders directly onto an HTML5 canvas.
+- **Islamic Heritage Focus**: Highlights historically significant Muslim countries and region connections (Saudi Arabia, Turkey, Morocco, Malaysia, Indonesia, Egypt, UAE, and Spain/Andalusia) in gold.
+- **Flight Arcs**: Renders glowing curved paths connecting all highlighted countries. Click a country pin to view cultural notes, visa specifications, and travel connections in a floating glassmorphic info-card.
+- **Physics Drag**: Supports dragging to tilt or spin the globe, coupled with automatic idle rotation.
 
-```txt
-travel-city-explorer-api-boilerplate/
-├── server.js
-├── package.json
-├── .env.example
-├── src/
-│   ├── config/
-│   │   └── db.js
-│   ├── controllers/
-│   │   └── ...15 controllers files
-│   ├── middlewares/
-│   │   ├── authMiddleware.js
-│   │   ├── notFound.js
-│   │   └── validateObjectId.js
-│   ├── models/
-│   │   └── ...15 model files
-│   └── routes/
-│       └── ...route files
-└── docs/
-    └── team-task-plan.md
+### 2. Country-Specific Layout Morphing
+- When a traveler selects a country or city on their explorer dashboard, the **entire application's color theme** (backgrounds, borders, highlights, and canvas shapes) morphs dynamically to reflect the selected country's aesthetic palette (e.g., *Emerald & Gold for Saudi Arabia*, *Turquoise for Turkey*, *Terracotta for Morocco*, *Cherry Blossom Pink for Japan*).
+
+### 3. Comprehensive Itinerary Planner
+- Plan your trips day-by-day with customized daily budgets, timeline tracking, and scheduled activities for cities, mosques, restaurants, and hotels.
+
+### 4. Expense Ledger
+- Track travel expenses categorized by transport, accommodation, ticketing, and dining. View remaining budgets and total spends computed in real time.
+
+### 5. Local Guides & Halal Spotting
+- Connect with local verified guides. Access detailed logs of mosques (with prayer hall details and Jummah times) and halal-certified dining options.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Frontend**: Next.js (App Router), React 19, D3.js (Geographic Orthographic Projectors), TopoJSON-Client, Vanilla CSS (Custom properties & theme data attributes).
+- **Backend**: Node.js, Express, MongoDB, Mongoose, JWT (JSON Web Tokens) Authentication, Morgan Logging, CORS middleware.
+- **Deployment**: Vercel Serverless Functions (Backend) & Vercel Static Hosting (Frontend).
+
+---
+
+## 📁 Directory Structure
+
+```text
+travel-city/
+├── frontend/             # Next.js Frontend Application
+│   ├── public/           # Static asset assets
+│   └── src/
+│       ├── app/          # App Router (Pages: Dashboard, Login, Signup)
+│       ├── components/   # UI components (InteractiveGlobe, ParallaxBackground)
+│       ├── context/      # AuthContext & Theme togglers
+│       └── services/     # API Fetch service layers
+├── src/                  # Express API Backend code
+│   ├── controllers/      # Route controllers (Auth, City, Mosque, Guide, Itinerary)
+│   ├── middlewares/      # JWT authentications and object validations
+│   ├── models/           # Mongoose Database schemas & connection hook
+│   └── routes/           # REST endpoints
+├── server.js             # API entrypoint (Vercel-compatible)
+├── vercel.json           # Backend serverless configuration
+└── seed.js               # Database population script
 ```
 
-## Setup Instructions
+---
 
-### 1. Install dependencies
+## 🚀 Local Installation & Setup
 
-```bash
-npm install
-```
+### Prerequisites
+- Node.js installed locally.
+- MongoDB running locally or a MongoDB Atlas cloud URI connection.
 
-### 2. Create environment file
+### 1. Backend Setup
+1. From the root directory, create a `.env` file based on `.env.example`:
+   ```env
+   PORT=5000
+   MONGO_URI=mongodb://127.0.0.1:27017/travel_city_explorer
+   JWT_SECRET=your_jwt_secret_key
+   NODE_ENV=development
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Seed the database with sample relational records (Mosques, Cities, Hotels, Local Guides, and Users):
+   ```bash
+   node seed.js
+   ```
+4. Run the API server in development mode:
+   ```bash
+   npm run dev
+   ```
 
-```bash
-cp .env.example .env
-```
+### 2. Frontend Setup
+1. Navigate into the `frontend/` directory:
+   ```bash
+   cd frontend
+   ```
+2. Create a `.env.local` file pointing to your local backend API:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5000
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the Next.js development server:
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Update `.env` if needed:
+---
 
-```env
-PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/travel_city_explorer
-NODE_ENV=development
-```
+## ☁️ Deployment Instructions (Vercel)
 
-### 3. Start MongoDB
+Both the Next.js frontend and Express API backend are fully configured for Vercel.
 
-Make sure MongoDB is running locally.
+### 1. Deploy the Backend
+1. Modify `MONGO_URI` and `JWT_SECRET` in your Vercel Project Environment settings.
+2. Run from the root directory:
+   ```bash
+   npx vercel --prod
+   ```
+3. Copy your live API URL (e.g., `https://travel-city-sable.vercel.app`).
 
-### 4. Start the server
-
-```bash
-npm run dev
-```
-
-Server will run at:
-
-```txt
-http://localhost:5000
-```
-
-Health check:
-
-```txt
-GET http://localhost:5000/api/health
-```
-
-## Models Included
-
-1. User
-2. Country
-3. City
-4. Place
-5. Mosque
-6. Restaurant
-7. Hotel
-8. TravelItinerary
-9. Review
-10. Favorite
-11. TransportOption
-12. LocalGuide
-13. CultureNote
-14. VisaInfo
-15. TravelExpense
-
-## API Routes
-
-| Model | Base Route |
-|---|---|
-| User | `/api/users` |
-| Country | `/api/countries` |
-| City | `/api/cities` |
-| Place | `/api/places` |
-| Mosque | `/api/mosques` |
-| Restaurant | `/api/restaurants` |
-| Hotel | `/api/hotels` |
-| TravelItinerary | `/api/travel-itineraries` |
-| Review | `/api/reviews` |
-| Favorite | `/api/favorites` |
-| TransportOption | `/api/transport-options` |
-| LocalGuide | `/api/local-guides` |
-| CultureNote | `/api/culture-notes` |
-| VisaInfo | `/api/visa-info` |
-| TravelExpense | `/api/travel-expenses` |
-
-## CRUD Endpoints Expected From Each Developer
-
-Each developer should implement these 5 APIs for their assigned model:
-
-```txt
-POST   /api/<resource>
-GET    /api/<resource>
-GET    /api/<resource>/:id
-PUT/PATCH    /api/<resource>/:id
-DELETE /api/<resource>/:id
-```
-
-## Branch Naming Rule
-
-```bash
-feature/<model_name>-<developer_name>
-```
-
-Examples:
-
-```bash
-feature/country-aamir
-feature/city-faizan
-feature/mosque-saqlain
-feature/restaurant-ali
-```
-
-## Developer Task
-
-Each developer should:
-
-1. Create a branch using the required naming format.
-2. Open their assigned controller file.
-3. Implement all CRUD functions.
-4. Test all APIs in Postman, Thunder Client, or Hoppscotch.
-5. Commit changes each changes.
-6. Push branch to GitHub.
-7. Create a pull request for main branch.
-
-## Example CRUD Logic
-
-See:
-
-```txt
-src/controllers/_crudControllerTemplate.js
-src/controllers/_sampleCompletedCountryController.js
-```
-
-The controller files currently return `501 Not Implemented`. That is intentional so each student can complete their own model CRUD.
-
-## Frontend Setup & Running
-
-The frontend is built with React, Next.js (App Router), and Vanilla CSS, using a premium glassmorphic dark theme.
-
-### 1. Install Frontend Dependencies
-
-Navigate to the `frontend` directory and install dependencies:
-```bash
-cd frontend
-npm install
-```
-
-### 2. Run the Frontend
-
-Start the development server:
-```bash
-npm run dev
-```
-
-The application will run at:
-```txt
-http://localhost:3000
-```
-
-### 3. Database Seeding & Administrative Management
-
-To populate the database with countries and cities:
-1. Sign up on the frontend using the **Administrator** role.
-2. Log in to access the Dashboard.
-3. The **Add Country** and **Add City** buttons will appear on the top right of the **Destination Explorer** tab. Use them to directly seed and populate your MongoDB database through the UI!
-
+### 2. Deploy the Frontend
+1. Add `NEXT_PUBLIC_API_URL` to your Vercel Frontend environment settings, pointing to your live API.
+2. Run from the `frontend/` directory:
+   ```bash
+   cd frontend
+   npx vercel --prod
+   ```
