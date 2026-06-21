@@ -239,6 +239,29 @@ export const api = {
       });
       return handleResponse(res);
     },
+    create: async (data) => {
+      const res = await fetch(`${API_URL}/api/visa-info`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(res);
+    },
+    update: async (id, data) => {
+      const res = await fetch(`${API_URL}/api/visa-info/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(res);
+    },
+    delete: async (id) => {
+      const res = await fetch(`${API_URL}/api/visa-info/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+      });
+      return handleResponse(res);
+    },
   },
 
   // Culture Notes
@@ -252,6 +275,77 @@ export const api = {
     },
     list: async () => {
       const res = await fetch(`${API_URL}/api/culture-notes`, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      return handleResponse(res);
+    },
+    create: async (data) => {
+      const res = await fetch(`${API_URL}/api/culture-notes`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(res);
+    },
+    update: async (id, data) => {
+      const res = await fetch(`${API_URL}/api/culture-notes/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(res);
+    },
+    delete: async (id) => {
+      const res = await fetch(`${API_URL}/api/culture-notes/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+      });
+      return handleResponse(res);
+    },
+  },
+
+  // Mosques
+  mosques: {
+    list: async (cityId) => {
+      const url = cityId ? `${API_URL}/api/mosque?city=${cityId}` : `${API_URL}/api/mosque`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      return handleResponse(res);
+    },
+  },
+
+  // Restaurants
+  restaurants: {
+    list: async (cityId) => {
+      const url = cityId ? `${API_URL}/api/restaurants?city=${cityId}` : `${API_URL}/api/restaurants`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      return handleResponse(res);
+    },
+  },
+
+  // Hotels
+  hotels: {
+    list: async (cityId) => {
+      const url = cityId ? `${API_URL}/api/hotels?city=${cityId}` : `${API_URL}/api/hotels`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      return handleResponse(res);
+    },
+  },
+
+  // Transport Options
+  transports: {
+    list: async (fromCityId) => {
+      const url = fromCityId ? `${API_URL}/api/transport-option?fromCity=${fromCityId}` : `${API_URL}/api/transport-option`;
+      const res = await fetch(url, {
         method: 'GET',
         headers: getHeaders(),
       });

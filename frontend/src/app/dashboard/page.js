@@ -130,7 +130,8 @@ export default function DashboardPage() {
     places: [],
     mosques: [],
     restaurants: [],
-    hotels: []
+    hotels: [],
+    transports: []
   });
   const [countryInfo, setCountryInfo] = useState({
     visa: null,
@@ -154,12 +155,18 @@ export default function DashboardPage() {
   const [showCityModal, setShowCityModal] = useState(false);
   const [showItineraryModal, setShowItineraryModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showVisaModal, setShowVisaModal] = useState(false);
+  const [showCultureNoteModal, setShowCultureNoteModal] = useState(false);
 
   // Form states
   const [countryForm, setCountryForm] = useState({ name: '', code: '', continent: '', description: '', currency: '', safetyLevel: 'medium' });
   const [cityForm, setCityForm] = useState({ name: '', country: '', description: '', popularFor: '', bestTimeToVisit: '' });
   const [itineraryForm, setItineraryForm] = useState({ title: '', country: '', budget: '', startDate: '', endDate: '' });
   const [expenseForm, setExpenseForm] = useState({ itinerary: '', category: 'other', amount: '', currency: 'USD', note: '' });
+  const [visaForm, setVisaForm] = useState({ passportCountry: 'India', visaType: '', applicationMode: 'embassy', documentsRequired: '', processingTime: '', feeAmount: 0, feeCurrency: 'EUR', officialWebsite: '', notes: '' });
+  const [cultureNoteForm, setCultureNoteForm] = useState({ title: '', category: 'local_customs', content: '', tags: '', cityId: '' });
+  const [editingVisaId, setEditingVisaId] = useState(null);
+  const [editingCultureNoteId, setEditingCultureNoteId] = useState(null);
 
   // Route protection
   useEffect(() => {
@@ -299,21 +306,43 @@ export default function DashboardPage() {
     setLoading(true);
     setError('');
     try {
-      // Simulate loading related items (Places, Mosques, Hotels, Restaurants) from backend or endpoints if available.
-      // In our boilerplate, we can hit GET /api/places?city=ID or try catch
       let fetchedPlaces = [];
+      let fetchedMosques = [];
+      let fetchedRestaurants = [];
+      let fetchedHotels = [];
+      let fetchedTransports = [];
+
       try {
         const placeRes = await api.places.list(city._id);
         if (placeRes.success) fetchedPlaces = placeRes.data || [];
-      } catch (err) {
-        console.warn('Places API failed or empty', err);
-      }
+      } catch (err) { console.warn('Places API failed', err); }
+
+      try {
+        const mosqueRes = await api.mosques.list(city._id);
+        if (mosqueRes.success) fetchedMosques = mosqueRes.data || [];
+      } catch (err) { console.warn('Mosques API failed', err); }
+
+      try {
+        const restaurantRes = await api.restaurants.list(city._id);
+        if (restaurantRes.success) fetchedRestaurants = restaurantRes.data || [];
+      } catch (err) { console.warn('Restaurants API failed', err); }
+
+      try {
+        const hotelRes = await api.hotels.list(city._id);
+        if (hotelRes.success) fetchedHotels = hotelRes.data || [];
+      } catch (err) { console.warn('Hotels API failed', err); }
+
+      try {
+        const transportRes = await api.transports.list(city._id);
+        if (transportRes.success) fetchedTransports = transportRes.data || [];
+      } catch (err) { console.warn('Transports API failed', err); }
 
       setCityDetails({
         places: fetchedPlaces,
-        mosques: [],
-        restaurants: [],
-        hotels: []
+        mosques: fetchedMosques,
+        restaurants: fetchedRestaurants,
+        hotels: fetchedHotels,
+        transports: fetchedTransports
       });
     } catch (err) {
       setError('Could not retrieve city attractions.');
@@ -449,6 +478,140 @@ export default function DashboardPage() {
     } catch (err) {
       alert(err.message || 'Delete failed.');
     }
+  };
+
+  const handleSaveVisaInfo = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      const payload = {
+        country: selectedCountry._id,
+        passportCountry: visaForm.passportCountry,
+        visaType: visaForm.visaType,
+        applicationMode: visaForm.applicationMode,
+        documentsRequired: visaForm.documentsRequired ? visaForm.documentsRequired.split(',').map(d => d.trim()) : [],
+        processingTime: visaForm.processingTime,
+        fee: {
+          amount: Number(visaForm.feeAmount),
+          currency: visaForm.feeCurrency
+        },
+        officialWebsite: visaForm.officialWebsite,
+        notes: visaForm.notes
+      };
+
+      let res;
+      if (editingVisaId) {
+        res = await api.visaInfo.update(editingVisaId, payload);
+      } else {
+        res = await api.visaInfo.create(payload);
+      }
+
+      if (res.success) {
+        setSuccess(editingVisaId ? 'Visa info updated successfully!' : 'Visa info created successfully!');
+        setShowVisaModal(false);
+        setEditingVisaId(null);
+        setVisaForm({ passportCountry: 'India', visaType: '', applicationMode: 'embassy', documentsRequired: '', processingTime: '', feeAmount: 0, feeCurrency: 'EUR', officialWebsite: '', notes: '' });
+        // Refresh country info
+        handleSelectCountry(selectedCountry);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to save visa info.');
+    }
+  };
+
+  const handleDeleteVisaInfo = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this visa information?')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await api.visaInfo.delete(id);
+      if (res.success) {
+        setSuccess('Visa information deleted successfully!');
+        // Refresh country info
+        handleSelectCountry(selectedCountry);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to delete visa info.');
+    }
+  };
+
+  const handleEditVisaInfoClick = (visa) => {
+    setEditingVisaId(visa._id);
+    setVisaForm({
+      passportCountry: visa.passportCountry || 'India',
+      visaType: visa.visaType || '',
+      applicationMode: visa.applicationMode || 'embassy',
+      documentsRequired: visa.documentsRequired ? visa.documentsRequired.join(', ') : '',
+      processingTime: visa.processingTime || '',
+      feeAmount: visa.fee?.amount || 0,
+      feeCurrency: visa.fee?.currency || 'EUR',
+      officialWebsite: visa.officialWebsite || '',
+      notes: visa.notes || ''
+    });
+    setShowVisaModal(true);
+  };
+
+  const handleSaveCultureNote = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      const payload = {
+        country: selectedCountry._id,
+        title: cultureNoteForm.title,
+        category: cultureNoteForm.category,
+        content: cultureNoteForm.content,
+        tags: cultureNoteForm.tags ? cultureNoteForm.tags.split(',').map(t => t.trim()) : [],
+        city: cultureNoteForm.cityId || undefined
+      };
+
+      let res;
+      if (editingCultureNoteId) {
+        res = await api.cultureNotes.update(editingCultureNoteId, payload);
+      } else {
+        res = await api.cultureNotes.create(payload);
+      }
+
+      if (res.success) {
+        setSuccess(editingCultureNoteId ? 'Culture note updated successfully!' : 'Culture note created successfully!');
+        setShowCultureNoteModal(false);
+        setEditingCultureNoteId(null);
+        setCultureNoteForm({ title: '', category: 'local_customs', content: '', tags: '', cityId: '' });
+        // Refresh country info
+        handleSelectCountry(selectedCountry);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to save culture note.');
+    }
+  };
+
+  const handleDeleteCultureNote = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this culture note?')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await api.cultureNotes.delete(id);
+      if (res.success) {
+        setSuccess('Culture note deleted successfully!');
+        // Refresh country info
+        handleSelectCountry(selectedCountry);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to delete culture note.');
+    }
+  };
+
+  const handleEditCultureNoteClick = (note) => {
+    setEditingCultureNoteId(note._id);
+    setCultureNoteForm({
+      title: note.title || '',
+      category: note.category || 'local_customs',
+      content: note.content || '',
+      tags: note.tags ? note.tags.join(', ') : '',
+      cityId: note.city?._id || note.city || ''
+    });
+    setShowCultureNoteModal(true);
   };
 
   const handleLogout = () => {
@@ -802,7 +965,7 @@ export default function DashboardPage() {
 
                     <div style={styles.tabsDivider}></div>
 
-                    <h3 style={styles.detailsSubHeader}>🗺️ Tourist Places / Attractions</h3>
+                    <h3 style={styles.detailsSubHeader}>🗺️ Tourist Places & Attractions</h3>
                     {loading ? (
                       <p>Loading attractions...</p>
                     ) : cityDetails.places.length === 0 ? (
@@ -811,13 +974,179 @@ export default function DashboardPage() {
                       <div style={styles.attractionsGrid}>
                         {cityDetails.places.map((place) => (
                           <div key={place._id} style={styles.attractionCard} className="glass-panel">
-                            <h4>{place.name}</h4>
+                            {place.images && place.images.length > 0 && (
+                              <img 
+                                src={place.images[0]} 
+                                alt={place.name} 
+                                style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '12px' }} 
+                              />
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                              <h4 style={{ margin: 0 }}>{place.name}</h4>
+                              {place.category && (
+                                <span style={{ fontSize: '9px', padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', color: 'var(--secondary)', textTransform: 'uppercase', flexShrink: 0 }}>
+                                  {place.category}
+                                </span>
+                              )}
+                            </div>
                             <p style={styles.attractionDesc}>{place.description}</p>
                             <div style={styles.attractionDetails}>
                               <span>🎫 Fee: {place.entryFee > 0 ? `$${place.entryFee}` : 'Free'}</span>
                               <span>🕒 Hours: {place.openingHours || 'Varies'}</span>
                             </div>
                             {place.address && <p style={styles.attractionAddress}>📍 {place.address}</p>}
+                            {place.tags && place.tags.length > 0 && (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                {place.tags.map((t, idx) => (
+                                  <span key={idx} style={{ fontSize: '9px', color: 'var(--text-muted)' }}>#{t}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div style={styles.tabsDivider}></div>
+                    <h3 style={styles.detailsSubHeader}>🕌 Local Mosques & Prayer Spaces</h3>
+                    {loading ? (
+                      <p>Loading mosques...</p>
+                    ) : cityDetails.mosques.length === 0 ? (
+                      <p style={styles.emptyText}>No mosques registered in this city yet.</p>
+                    ) : (
+                      <div style={styles.attractionsGrid}>
+                        {cityDetails.mosques.map((mosque) => (
+                          <div key={mosque._id} style={styles.attractionCard} className="glass-panel">
+                            {mosque.images && mosque.images.length > 0 && (
+                              <img src={mosque.images[0]} alt={mosque.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '12px' }} />
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                              <h4 style={{ margin: 0 }}>{mosque.name}</h4>
+                              {mosque.sect && (
+                                <span style={{ fontSize: '9px', padding: '2px 6px', background: 'rgba(16,185,129,0.1)', borderRadius: '100px', color: 'var(--primary)', textTransform: 'uppercase', flexShrink: 0 }}>
+                                  {mosque.sect}
+                                </span>
+                              )}
+                            </div>
+                            {mosque.description && <p style={styles.attractionDesc}>{mosque.description}</p>}
+                            <div style={styles.attractionDetails}>
+                              <span>👥 Capacity: {mosque.capacity || 'Varies'}</span>
+                              {mosque.jummahTime && <span>🕌 Jummah: {mosque.jummahTime}</span>}
+                            </div>
+                            {mosque.address && <p style={styles.attractionAddress}>📍 {mosque.address}</p>}
+                            {mosque.facilities && mosque.facilities.length > 0 && (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                {mosque.facilities.map((f, idx) => (
+                                  <span key={idx} style={{ fontSize: '9px', padding: '1px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', color: 'var(--text-secondary)' }}>
+                                    {f.replace('_', ' ')}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div style={styles.tabsDivider}></div>
+                    <h3 style={styles.detailsSubHeader}>🍽️ Halal & Vegetarian Dining Options</h3>
+                    {loading ? (
+                      <p>Loading restaurants...</p>
+                    ) : cityDetails.restaurants.length === 0 ? (
+                      <p style={styles.emptyText}>No halal restaurants documented in this city.</p>
+                    ) : (
+                      <div style={styles.attractionsGrid}>
+                        {cityDetails.restaurants.map((rest) => (
+                          <div key={rest._id} style={styles.attractionCard} className="glass-panel">
+                            {rest.images && rest.images.length > 0 && (
+                              <img src={rest.images[0]} alt={rest.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '12px' }} />
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                              <h4 style={{ margin: 0 }}>{rest.name}</h4>
+                              <span style={{ fontSize: '9px', padding: '2px 6px', background: 'rgba(245,158,11,0.15)', borderRadius: '100px', color: '#fbbf24', textTransform: 'uppercase', flexShrink: 0 }}>
+                                {rest.halalStatus?.replace('_', ' ') || 'Unknown'}
+                              </span>
+                            </div>
+                            <div style={styles.attractionDetails}>
+                              <span>💰 Price: {rest.priceRange || 'mid'}</span>
+                              {rest.rating > 0 && <span>⭐ Rating: {rest.rating}/5</span>}
+                            </div>
+                            <p style={styles.attractionDesc}><strong>Cuisine:</strong> {rest.cuisine?.join(', ') || 'Various'}</p>
+                            {rest.popularDishes && rest.popularDishes.length > 0 && (
+                              <p style={styles.attractionDesc}><strong>Dishes:</strong> {rest.popularDishes.join(', ')}</p>
+                            )}
+                            {rest.address && <p style={styles.attractionAddress}>📍 {rest.address}</p>}
+                            {rest.phone && <p style={styles.attractionAddress}>📞 {rest.phone}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div style={styles.tabsDivider}></div>
+                    <h3 style={styles.detailsSubHeader}>🏨 Muslim-Friendly Accommodations</h3>
+                    {loading ? (
+                      <p>Loading hotels...</p>
+                    ) : cityDetails.hotels.length === 0 ? (
+                      <p style={styles.emptyText}>No hotels registered in this city yet.</p>
+                    ) : (
+                      <div style={styles.attractionsGrid}>
+                        {cityDetails.hotels.map((hotel) => (
+                          <div key={hotel._id} style={styles.attractionCard} className="glass-panel">
+                            {hotel.images && hotel.images.length > 0 && (
+                              <img src={hotel.images[0]} alt={hotel.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '12px' }} />
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                              <h4 style={{ margin: 0 }}>{hotel.name}</h4>
+                              <span style={{ fontSize: '10px', padding: '2px 8px', background: 'rgba(6,78,59,0.2)', borderRadius: '100px', color: 'var(--primary)', fontWeight: 'bold', flexShrink: 0 }}>
+                                Score: {hotel.muslimFriendlyScore || 0}/10
+                              </span>
+                            </div>
+                            <div style={styles.attractionDetails}>
+                              <span>⭐ Stars: {'⭐'.repeat(hotel.starRating || 0)}</span>
+                              <span>💵 From: ${hotel.pricePerNight || 0}/night</span>
+                            </div>
+                            {hotel.address && <p style={styles.attractionAddress}>📍 {hotel.address}</p>}
+                            {hotel.amenities && hotel.amenities.length > 0 && (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                {hotel.amenities.map((a, idx) => (
+                                  <span key={idx} style={{ fontSize: '9px', padding: '1px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', color: 'var(--text-secondary)' }}>
+                                    {a}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div style={styles.tabsDivider}></div>
+                    <h3 style={styles.detailsSubHeader}>🚌 Inter-city Transit & Connections</h3>
+                    {loading ? (
+                      <p>Loading transport options...</p>
+                    ) : cityDetails.transports.length === 0 ? (
+                      <p style={styles.emptyText}>No outbound transit connections logged from this city.</p>
+                    ) : (
+                      <div style={styles.attractionsGrid}>
+                        {cityDetails.transports.map((tr) => (
+                          <div key={tr._id} style={styles.attractionCard} className="glass-panel">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <h4 style={{ textTransform: 'capitalize', margin: 0 }}>🚀 {tr.type || 'Transit'}</h4>
+                              <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 'bold' }}>
+                                {tr.estimatedCost} {tr.currency || 'USD'}
+                              </span>
+                            </div>
+                            <p style={styles.attractionDesc}><strong>Provider:</strong> {tr.provider || 'Local Transit'}</p>
+                            <div style={styles.attractionDetails}>
+                              <span>🕒 Duration: {tr.estimatedDuration || 'Varies'}</span>
+                              {tr.toCity && <span>📍 Destination: {typeof tr.toCity === 'object' ? tr.toCity.name : cities.find(c => c._id === tr.toCity)?.name || 'Next City'}</span>}
+                            </div>
+                            {tr.notes && <p style={styles.attractionDesc}>📝 {tr.notes}</p>}
+                            {tr.bookingUrl && (
+                              <a href={tr.bookingUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ marginTop: '12px', width: '100%', justifyContent: 'center', display: 'flex', fontSize: '11px', padding: '6px' }}>
+                                Book Tickets Online
+                              </a>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -871,12 +1200,64 @@ export default function DashboardPage() {
                     {/* Visa and Culture information */}
                     <div style={styles.countryAdditions} className="country-additions-flex">
                       <div style={styles.additionCol}>
-                        <h3 style={styles.detailsSubHeader}><FaPassport /> Visa Information</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                          <h3 style={{ ...styles.detailsSubHeader, margin: 0 }}><FaPassport /> Visa Information</h3>
+                          {user.role === 'admin' && (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {countryInfo.visa ? (
+                                <>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                    onClick={() => handleEditVisaInfoClick(countryInfo.visa)}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--accent-red, #ef4444)', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                    onClick={() => handleDeleteVisaInfo(countryInfo.visa._id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              ) : (
+                                <button 
+                                  className="btn-primary" 
+                                  style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                  onClick={() => {
+                                    setEditingVisaId(null);
+                                    setVisaForm({ passportCountry: 'India', visaType: '', applicationMode: 'embassy', documentsRequired: '', processingTime: '', feeAmount: 0, feeCurrency: 'EUR', officialWebsite: '', notes: '' });
+                                    setShowVisaModal(true);
+                                  }}
+                                >
+                                  + Add Visa
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                         {countryInfo.visa ? (
-                          <div style={styles.infoBox} className="glass-panel">
-                            <p><strong>Visa Required:</strong> {countryInfo.visa.visaRequired ? 'Yes' : 'No'}</p>
-                            <p><strong>Requirements:</strong> {countryInfo.visa.requirements}</p>
-                            <p><strong>Max Stay:</strong> {countryInfo.visa.maxStayDays ? `${countryInfo.visa.maxStayDays} days` : 'N/A'}</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }} className="glass-panel">
+                            <p style={{ margin: 0 }}><strong>Visa Type:</strong> {countryInfo.visa.visaType || 'Tourist'}</p>
+                            <p style={{ margin: 0 }}><strong>Passport Country:</strong> {countryInfo.visa.passportCountry || 'Any'}</p>
+                            <p style={{ margin: 0 }}><strong>Application Mode:</strong> {countryInfo.visa.applicationMode?.toUpperCase() || 'EMBASSY'}</p>
+                            <p style={{ margin: 0 }}><strong>Processing Time:</strong> {countryInfo.visa.processingTime || 'N/A'}</p>
+                            {countryInfo.visa.fee && (
+                              <p style={{ margin: 0 }}><strong>Visa Fee:</strong> {countryInfo.visa.fee.amount} {countryInfo.visa.fee.currency || 'USD'}</p>
+                            )}
+                            {countryInfo.visa.officialWebsite && (
+                              <p style={{ margin: 0 }}>
+                                <strong>Official Website:</strong>{' '}
+                                <a href={countryInfo.visa.officialWebsite} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
+                                  Visit Website
+                                </a>
+                              </p>
+                            )}
+                            {countryInfo.visa.documentsRequired && countryInfo.visa.documentsRequired.length > 0 && (
+                              <p style={{ margin: 0 }}><strong>Required Docs:</strong> {countryInfo.visa.documentsRequired.join(', ')}</p>
+                            )}
+                            {countryInfo.visa.notes && <p style={{ margin: 0 }}><strong>Notes:</strong> {countryInfo.visa.notes}</p>}
                           </div>
                         ) : (
                           <p style={styles.emptyText}>No visa rules uploaded for this country.</p>
@@ -884,12 +1265,59 @@ export default function DashboardPage() {
                       </div>
 
                       <div style={styles.additionCol}>
-                        <h3 style={styles.detailsSubHeader}><FaInfoCircle /> Culture & Custom Notes</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                          <h3 style={{ ...styles.detailsSubHeader, margin: 0 }}><FaInfoCircle /> Culture Notes</h3>
+                          {user.role === 'admin' && (
+                            <button 
+                              className="btn-primary" 
+                              style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              onClick={() => {
+                                setEditingCultureNoteId(null);
+                                setCultureNoteForm({ title: '', category: 'local_customs', content: '', tags: '', cityId: '' });
+                                setShowCultureNoteModal(true);
+                              }}
+                            >
+                              + Add Note
+                            </button>
+                          )}
+                        </div>
                         {countryInfo.cultureNotes.length > 0 ? (
                           countryInfo.cultureNotes.map((note) => (
-                            <div key={note._id} style={styles.infoBox} className="glass-panel">
-                              <h4>{note.title || 'General Custom'}</h4>
-                              <p>{note.note}</p>
+                            <div key={note._id} className="glass-panel" style={{ padding: '16px', marginBottom: '12px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <h4 style={{ margin: 0 }}>{note.title || 'General Custom'}</h4>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontSize: '9px', padding: '2px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', color: 'var(--primary)', textTransform: 'uppercase' }}>
+                                    {note.category?.replace('_', ' ') || 'Other'}
+                                  </span>
+                                  {user.role === 'admin' && (
+                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                      <button 
+                                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
+                                        onClick={() => handleEditCultureNoteClick(note)}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button 
+                                        style={{ background: 'none', border: 'none', color: 'var(--accent-red, #ef4444)', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
+                                        onClick={() => handleDeleteCultureNote(note._id)}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <p style={{ margin: '8px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{note.content}</p>
+                              {note.tags && note.tags.length > 0 && (
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                  {note.tags.map((t, idx) => (
+                                    <span key={idx} style={{ fontSize: '9px', padding: '1px 6px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px', color: 'var(--primary)' }}>
+                                      #{t}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ))
                         ) : (
@@ -1127,7 +1555,11 @@ export default function DashboardPage() {
                   {guides.map((g) => (
                     <div key={g._id} className="glass-panel" style={styles.guideCard}>
                       <div style={styles.avatarLarge}>
-                        <FaUser size={30} color="var(--primary)" />
+                        {g.user?.avatarUrl ? (
+                          <img src={g.user.avatarUrl} alt={g.user.name || 'Local Guide'} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          <FaUser size={30} color="var(--primary)" />
+                        )}
                       </div>
                       <h3 style={styles.guideName}>{g.user?.name || g.name || 'Local Guide'}</h3>
                       <p style={styles.guideLoc}>
@@ -1138,17 +1570,25 @@ export default function DashboardPage() {
                       
                       <div style={styles.guideDetails}>
                         <p><strong>Languages:</strong> {g.languages?.join(', ') || 'English'}</p>
-                        <p><strong>Hourly Rate:</strong> ${g.hourlyRate || 'TBD'}/hr</p>
+                        <p><strong>Hourly Rate:</strong> {g.hourlyRate || 'TBD'} {g.currency || 'EUR'}/hr</p>
                         <p><strong>Expertise:</strong> {g.expertiseArea || g.expertise?.join(', ') || 'General Touring'}</p>
+                        {g.availableDays && g.availableDays.length > 0 && (
+                          <p><strong>Availability:</strong> {g.availableDays.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')}</p>
+                        )}
+                        {g.rating > 0 && (
+                          <p><strong>Rating:</strong> ⭐ {g.rating.toFixed(1)} / 5.0</p>
+                        )}
                       </div>
 
-                      {(g.user?.phone || g.contactWhatsapp || g.phone) && (
+                      {(g.contactWhatsapp || g.user?.phone || g.phone) && (
                         <a 
-                          href={`tel:${g.user?.phone || g.contactWhatsapp || g.phone}`} 
+                          href={g.contactWhatsapp ? `https://wa.me/${g.contactWhatsapp.replace(/\s+/g, '').replace('+', '')}` : `tel:${g.user?.phone || g.phone}`} 
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="btn-primary" 
-                          style={{ marginTop: '16px', width: '100%', justifyContent: 'center' }}
+                          style={{ marginTop: '16px', width: '100%', justifyContent: 'center', display: 'flex', textDecoration: 'none' }}
                         >
-                          Contact Guide
+                          {g.contactWhatsapp ? 'Chat on WhatsApp' : 'Contact Guide'}
                         </a>
                       )}
                     </div>
@@ -1269,6 +1709,176 @@ export default function DashboardPage() {
               <input type="number" required placeholder="Amount ($)" style={styles.modalInput} value={expenseForm.amount} onChange={e => setExpenseForm({...expenseForm, amount: e.target.value})} />
               <input type="text" placeholder="Notes (e.g. Airport taxi, Dinner)" style={styles.modalInput} value={expenseForm.note} onChange={e => setExpenseForm({...expenseForm, note: e.target.value})} />
               <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>Log Transaction</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Visa Modal */}
+      {showVisaModal && (
+        <div style={styles.modalOverlay}>
+          <div className="glass-panel animate-fade-in" style={styles.modal}>
+            <div style={styles.modalHeader}>
+              <h3>{editingVisaId ? 'Edit Visa Information' : 'Add Visa Information'}</h3>
+              <button style={styles.closeBtn} onClick={() => setShowVisaModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleSaveVisaInfo} style={styles.modalForm}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                Country: <strong>{selectedCountry?.name}</strong>
+              </div>
+              <input 
+                type="text" 
+                required 
+                placeholder="Visa Type (e.g. Tourist Visa)" 
+                style={styles.modalInput} 
+                value={visaForm.visaType} 
+                onChange={e => setVisaForm({...visaForm, visaType: e.target.value})} 
+              />
+              <input 
+                type="text" 
+                placeholder="Passport Country (default: India)" 
+                style={styles.modalInput} 
+                value={visaForm.passportCountry} 
+                onChange={e => setVisaForm({...visaForm, passportCountry: e.target.value})} 
+              />
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Application Mode:</label>
+                <select 
+                  style={styles.modalSelect} 
+                  value={visaForm.applicationMode} 
+                  onChange={e => setVisaForm({...visaForm, applicationMode: e.target.value})}
+                >
+                  <option value="evisa">E-Visa</option>
+                  <option value="embassy">Embassy</option>
+                  <option value="visa_on_arrival">Visa on Arrival</option>
+                  <option value="visa_free">Visa Free</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <input 
+                type="text" 
+                placeholder="Documents Required (comma-separated, e.g. Passport, Photo)" 
+                style={styles.modalInput} 
+                value={visaForm.documentsRequired} 
+                onChange={e => setVisaForm({...visaForm, documentsRequired: e.target.value})} 
+              />
+              <input 
+                type="text" 
+                placeholder="Processing Time (e.g. 5 Days)" 
+                style={styles.modalInput} 
+                value={visaForm.processingTime} 
+                onChange={e => setVisaForm({...visaForm, processingTime: e.target.value})} 
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ flex: 1 }}>
+                  <input 
+                    type="number" 
+                    placeholder="Fee Amount" 
+                    style={styles.modalInput} 
+                    value={visaForm.feeAmount} 
+                    onChange={e => setVisaForm({...visaForm, feeAmount: e.target.value})} 
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input 
+                    type="text" 
+                    placeholder="Currency (e.g. EUR)" 
+                    style={styles.modalInput} 
+                    value={visaForm.feeCurrency} 
+                    onChange={e => setVisaForm({...visaForm, feeCurrency: e.target.value})} 
+                  />
+                </div>
+              </div>
+              <input 
+                type="url" 
+                placeholder="Official Website URL" 
+                style={styles.modalInput} 
+                value={visaForm.officialWebsite} 
+                onChange={e => setVisaForm({...visaForm, officialWebsite: e.target.value})} 
+              />
+              <textarea 
+                placeholder="Additional Notes" 
+                style={styles.modalTextarea} 
+                value={visaForm.notes} 
+                onChange={e => setVisaForm({...visaForm, notes: e.target.value})} 
+              />
+              <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>
+                {editingVisaId ? 'Update Visa Info' : 'Save Visa Info'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Culture Note Modal */}
+      {showCultureNoteModal && (
+        <div style={styles.modalOverlay}>
+          <div className="glass-panel animate-fade-in" style={styles.modal}>
+            <div style={styles.modalHeader}>
+              <h3>{editingCultureNoteId ? 'Edit Culture Note' : 'Add Culture Note'}</h3>
+              <button style={styles.closeBtn} onClick={() => setShowCultureNoteModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleSaveCultureNote} style={styles.modalForm}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                Country: <strong>{selectedCountry?.name}</strong>
+              </div>
+              <input 
+                type="text" 
+                required 
+                placeholder="Title (e.g. Removing Shoes)" 
+                style={styles.modalInput} 
+                value={cultureNoteForm.title} 
+                onChange={e => setCultureNoteForm({...cultureNoteForm, title: e.target.value})} 
+              />
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Category:</label>
+                <select 
+                  style={styles.modalSelect} 
+                  value={cultureNoteForm.category} 
+                  onChange={e => setCultureNoteForm({...cultureNoteForm, category: e.target.value})}
+                >
+                  <option value="local_customs">Local Customs</option>
+                  <option value="food">Food</option>
+                  <option value="religion">Religion</option>
+                  <option value="history">History</option>
+                  <option value="safety">Safety</option>
+                  <option value="language">Language</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>City (Optional):</label>
+                <select 
+                  style={styles.modalSelect} 
+                  value={cultureNoteForm.cityId} 
+                  onChange={e => setCultureNoteForm({...cultureNoteForm, cityId: e.target.value})}
+                >
+                  <option value="">All Cities / General Country</option>
+                  {cities.filter(c => {
+                    const cid = typeof c.country === 'object' ? c.country?._id : c.country;
+                    return cid === selectedCountry?._id;
+                  }).map(c => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <textarea 
+                required
+                placeholder="Note Content" 
+                style={styles.modalTextarea} 
+                value={cultureNoteForm.content} 
+                onChange={e => setCultureNoteForm({...cultureNoteForm, content: e.target.value})} 
+              />
+              <input 
+                type="text" 
+                placeholder="Tags (comma-separated, e.g. etiquette, dining)" 
+                style={styles.modalInput} 
+                value={cultureNoteForm.tags} 
+                onChange={e => setCultureNoteForm({...cultureNoteForm, tags: e.target.value})} 
+              />
+              <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>
+                {editingCultureNoteId ? 'Update Note' : 'Save Note'}
+              </button>
             </form>
           </div>
         </div>
