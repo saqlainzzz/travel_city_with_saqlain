@@ -3,6 +3,9 @@ const Favorite = require('../models/Favorite');
 // Create new favorite
 const createFavorite = async (req, res) => {
   try {
+    if (req.user && !req.body.user) {
+      req.body.user = req.user._id;
+    }
     const doc = await Favorite.create(req.body);
     return res.status(201).json({
       success: true,
@@ -24,7 +27,7 @@ const getFavorites = async (req, res) => {
     const filter = { ...req.query, ...req.body };
     const docs = await Favorite.find(filter)
       .populate('user')
-            .populate('city');
+      .populate('itemId');
       
     return res.status(200).json({
       success: true,
@@ -45,7 +48,7 @@ const getFavorite = async (req, res) => {
   try {
     const doc = await Favorite.findById(req.params.id)
       .populate('user')
-            .populate('city');
+      .populate('itemId');
       
     if (!doc) {
       return res.status(404).json({

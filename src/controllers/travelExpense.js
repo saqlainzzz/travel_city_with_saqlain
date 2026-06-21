@@ -3,6 +3,9 @@ const TravelExpense = require('../models/TravelExpense');
 // Create new travelExpense
 const createTravelExpense = async (req, res) => {
   try {
+    if (req.user && !req.body.user) {
+      req.body.user = req.user._id;
+    }
     const doc = await TravelExpense.create(req.body);
     return res.status(201).json({
       success: true,

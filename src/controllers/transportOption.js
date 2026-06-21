@@ -23,8 +23,8 @@ const getTransportOptions = async (req, res) => {
   try {
     const filter = { ...req.query, ...req.body };
     const docs = await TransportOption.find(filter)
-      .populate('city')
-            .populate('country');
+      .populate('fromCity')
+      .populate('toCity');
       
     return res.status(200).json({
       success: true,
@@ -44,8 +44,8 @@ const getTransportOptions = async (req, res) => {
 const getTransportOption = async (req, res) => {
   try {
     const doc = await TransportOption.findById(req.params.id)
-      .populate('city')
-            .populate('country');
+      .populate('fromCity')
+      .populate('toCity');
       
     if (!doc) {
       return res.status(404).json({

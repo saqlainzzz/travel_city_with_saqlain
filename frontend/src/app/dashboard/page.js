@@ -232,7 +232,39 @@ export default function DashboardPage() {
   const fetchGuides = useCallback(async () => {
     try {
       const res = await api.guides.list();
-      if (res.success) setGuides(res.data || []);
+      if (res.success) {
+        const rawGuides = res.data || [];
+        const uniqueGuidesMap = {};
+        
+        rawGuides.forEach(g => {
+          const userId = g.user?._id || g.user || g._id;
+          if (!uniqueGuidesMap[userId]) {
+            uniqueGuidesMap[userId] = {
+              ...g,
+              servedCities: g.city ? [g.city] : [],
+            };
+          } else {
+            // Append city if not already in the served cities list
+            if (g.city) {
+              const currentCities = uniqueGuidesMap[userId].servedCities || [];
+              if (!currentCities.some(c => c._id === g.city._id)) {
+                currentCities.push(g.city);
+              }
+              uniqueGuidesMap[userId].servedCities = currentCities;
+            }
+            // Merge languages
+            if (g.languages) {
+              const currentLangs = uniqueGuidesMap[userId].languages || [];
+              g.languages.forEach(l => {
+                if (!currentLangs.includes(l)) currentLangs.push(l);
+              });
+              uniqueGuidesMap[userId].languages = currentLangs;
+            }
+          }
+        });
+        
+        setGuides(Object.values(uniqueGuidesMap));
+      }
     } catch (err) {
       console.error(err);
     }
@@ -1098,16 +1130,24 @@ export default function DashboardPage() {
                         <FaUser size={30} color="var(--primary)" />
                       </div>
                       <h3 style={styles.guideName}>{g.user?.name || g.name || 'Local Guide'}</h3>
-                      <p style={styles.guideLoc}>📍 Serves: {g.city?.name || 'Various Cities'}</p>
+                      <p style={styles.guideLoc}>
+                        📍 Serves: {g.servedCities && g.servedCities.length > 0 
+                          ? g.servedCities.map(c => c?.name).filter(Boolean).join(', ') 
+                          : (g.city?.name || 'Various Cities')}
+                      </p>
                       
                       <div style={styles.guideDetails}>
                         <p><strong>Languages:</strong> {g.languages?.join(', ') || 'English'}</p>
                         <p><strong>Hourly Rate:</strong> ${g.hourlyRate || 'TBD'}/hr</p>
-                        <p><strong>Expertise:</strong> {g.expertiseArea || 'General Touring'}</p>
+                        <p><strong>Expertise:</strong> {g.expertiseArea || g.expertise?.join(', ') || 'General Touring'}</p>
                       </div>
 
-                      {g.phone && (
-                        <a href={`tel:${g.phone}`} className="btn-primary" style={{ marginTop: '16px', width: '100%', justifyContent: 'center' }}>
+                      {(g.user?.phone || g.contactWhatsapp || g.phone) && (
+                        <a 
+                          href={`tel:${g.user?.phone || g.contactWhatsapp || g.phone}`} 
+                          className="btn-primary" 
+                          style={{ marginTop: '16px', width: '100%', justifyContent: 'center' }}
+                        >
                           Contact Guide
                         </a>
                       )}

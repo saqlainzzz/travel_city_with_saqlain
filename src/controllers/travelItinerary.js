@@ -3,6 +3,9 @@ const TravelItinerary = require('../models/TravelItinerary');
 // Create new travelItinerary
 const createTravelItinerary = async (req, res) => {
   try {
+    if (req.user && !req.body.user) {
+      req.body.user = req.user._id;
+    }
     const doc = await TravelItinerary.create(req.body);
     return res.status(201).json({
       success: true,
