@@ -27,6 +27,87 @@ import {
   FaMoon
 } from 'react-icons/fa';
 
+const countryFunFacts = {
+  'saudi-arabia': 'Mecca contains the Kaaba, the most sacred site in Islam, while Medina is home to Al-Masjid an-Nabawi (the Prophet\'s Mosque), established by the Prophet Muhammad (PBUH) himself.',
+  'turkey': 'Istanbul is the only city in the world that spans across two continents (Europe and Asia), divided by the scenic Bosphorus Strait. It is home to the Hagia Sophia and the Sultan Ahmed (Blue) Mosque.',
+  'morocco': 'The University of al-Qarawiyyin in Fez, founded in 859 AD by a Muslim woman named Fatima al-Fihri, is recognized by UNESCO as the oldest continuously operating university in the world.',
+  'malaysia': 'Malaysia is home to the stunning Putra Mosque (Pink Mosque), which is constructed with rose-tinted granite and sits gracefully on the edge of the artificial Putrajaya Lake.',
+  'indonesia': 'Indonesia contains over 17,000 islands and holds the world\'s largest Muslim population. The Istiqlal Mosque in Jakarta is the largest mosque in Southeast Asia, sitting right opposite the Jakarta Cathedral.',
+  'egypt': 'Cairo is known as the "City of a Thousand Minarets" due to its rich historic Islamic architecture, especially the historic Al-Azhar Mosque and University founded in 970 AD.',
+  'united-arab-emirates': 'The Sheikh Zayed Grand Mosque in Abu Dhabi features 82 domes, over 1,000 columns, and the world\'s largest hand-knotted carpet, crafted by 1,200 artisans.',
+  'spain': 'The Alhambra in Granada is a peak achievement of Moorish Islamic architecture in Europe, displaying intricate geometric tiling, flowing fountains, and calligraphy reading "No victor but Allah".',
+  'japan': 'Tokyo Camii is the largest mosque in Japan, constructed in a magnificent Ottoman Turkish architectural style with materials and artisans sent directly from Turkey.'
+};
+
+const calculateQibla = (lat, lng) => {
+  if (lat === undefined || lng === undefined) return null;
+  const meccaLat = 21.4225;
+  const meccaLng = 39.8262;
+
+  const latRad = (lat * Math.PI) / 180;
+  const lngRad = (lng * Math.PI) / 180;
+  const meccaLatRad = (meccaLat * Math.PI) / 180;
+  const meccaLngRad = (meccaLng * Math.PI) / 180;
+
+  const dLng = meccaLngRad - lngRad;
+
+  const y = Math.sin(dLng) * Math.cos(meccaLatRad);
+  const x = Math.cos(latRad) * Math.sin(meccaLatRad) -
+            Math.sin(latRad) * Math.cos(meccaLatRad) * Math.cos(dLng);
+
+  let bearing = Math.atan2(y, x) * (180 / Math.PI);
+  bearing = (bearing + 360) % 360;
+
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const idx = Math.round(bearing / 22.5) % 16;
+  const cardinal = directions[idx];
+
+  return {
+    bearing: bearing.toFixed(1),
+    cardinal: cardinal
+  };
+};
+
+const estimatePrayerTimes = (lat, lng) => {
+  if (lat === undefined || lng === undefined) return null;
+  
+  let fajr = 4.8;
+  let sunrise = 6.0;
+  let dhuhr = 12.3;
+  let asr = 15.6;
+  let maghrib = 18.2;
+  let isha = 19.5;
+
+  const lngOffset = ((lng % 15) * 4) / 60;
+  const latAbs = Math.abs(lat);
+  const seasonalShift = (latAbs / 60) * 1.2;
+
+  fajr = (fajr - seasonalShift + lngOffset + 24) % 24;
+  sunrise = (sunrise - seasonalShift / 2 + lngOffset + 24) % 24;
+  dhuhr = (dhuhr + lngOffset + 24) % 24;
+  asr = (asr + seasonalShift / 4 + lngOffset + 24) % 24;
+  maghrib = (maghrib + seasonalShift + lngOffset + 24) % 24;
+  isha = (isha + seasonalShift * 1.2 + lngOffset + 24) % 24;
+
+  const formatTime = (decimalHours) => {
+    const h = Math.floor(decimalHours);
+    const m = Math.floor((decimalHours - h) * 60);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const displayH = h % 12 === 0 ? 12 : h % 12;
+    const displayM = m < 10 ? `0${m}` : m;
+    return `${displayH}:${displayM} ${ampm}`;
+  };
+
+  return {
+    fajr: formatTime(fajr),
+    sunrise: formatTime(sunrise),
+    dhuhr: formatTime(dhuhr),
+    asr: formatTime(asr),
+    maghrib: formatTime(maghrib),
+    isha: formatTime(isha)
+  };
+};
+
 export default function DashboardPage() {
   const { user, loading: authLoading, logout, theme, toggleTheme } = useAuth();
   const router = useRouter();
@@ -58,8 +139,15 @@ export default function DashboardPage() {
 
   // UI state
   const [loading, setLoading] = useState(false);
+  const [isDashboardDataLoading, setIsDashboardDataLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const getCountryFunFact = (name) => {
+    if (!name) return null;
+    const key = name.toLowerCase().replace(/\s+/g, '-');
+    return countryFunFacts[key] || null;
+  };
 
   // Modals state
   const [showCountryModal, setShowCountryModal] = useState(false);
@@ -150,14 +238,26 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Initial Fetching
+  // Initial Fetching in parallel
   useEffect(() => {
     if (user) {
-      fetchCountries();
-      fetchCities();
-      fetchItineraries();
-      fetchExpenses();
-      fetchGuides();
+      const loadAllData = async () => {
+        setIsDashboardDataLoading(true);
+        try {
+          await Promise.all([
+            fetchCountries(),
+            fetchCities(),
+            fetchItineraries(),
+            fetchExpenses(),
+            fetchGuides()
+          ]);
+        } catch (err) {
+          console.error('Error loading dashboard data:', err);
+        } finally {
+          setIsDashboardDataLoading(false);
+        }
+      };
+      loadAllData();
     }
   }, [user, fetchCountries, fetchCities, fetchItineraries, fetchExpenses, fetchGuides]);
 
@@ -377,7 +477,7 @@ export default function DashboardPage() {
           </div>
         </Link>
 
-        <div style={styles.userCard}>
+        <div className="db-user-card">
           <div style={styles.avatar}>
             <FaUser size={20} color="var(--primary)" />
           </div>
@@ -390,10 +490,7 @@ export default function DashboardPage() {
         <nav style={styles.menu}>
           <button
             onClick={() => { setActiveTab('explorer'); setIsSidebarOpen(false); }}
-            style={{
-              ...styles.menuItem,
-              ...(activeTab === 'explorer' ? styles.menuItemActive : {}),
-            }}
+            className={`db-menu-item ${activeTab === 'explorer' ? 'db-menu-item-active' : ''}`}
           >
             <FaMapMarkedAlt size={18} />
             <span>Explorer</span>
@@ -401,10 +498,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => { setActiveTab('itineraries'); setIsSidebarOpen(false); }}
-            style={{
-              ...styles.menuItem,
-              ...(activeTab === 'itineraries' ? styles.menuItemActive : {}),
-            }}
+            className={`db-menu-item ${activeTab === 'itineraries' ? 'db-menu-item-active' : ''}`}
           >
             <FaCalendarAlt size={18} />
             <span>Itineraries</span>
@@ -412,10 +506,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => { setActiveTab('expenses'); setIsSidebarOpen(false); }}
-            style={{
-              ...styles.menuItem,
-              ...(activeTab === 'expenses' ? styles.menuItemActive : {}),
-            }}
+            className={`db-menu-item ${activeTab === 'expenses' ? 'db-menu-item-active' : ''}`}
           >
             <FaCreditCard size={18} />
             <span>Expenses</span>
@@ -423,10 +514,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => { setActiveTab('guides'); setIsSidebarOpen(false); }}
-            style={{
-              ...styles.menuItem,
-              ...(activeTab === 'guides' ? styles.menuItemActive : {}),
-            }}
+            className={`db-menu-item ${activeTab === 'guides' ? 'db-menu-item-active' : ''}`}
           >
             <FaCompass size={18} />
             <span>Local Guides</span>
@@ -452,7 +540,7 @@ export default function DashboardPage() {
           <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
 
-        <button onClick={handleLogout} style={styles.logoutBtn}>
+        <button onClick={handleLogout} className="db-logout-btn">
           <FaSignOutAlt size={18} />
           <span>Sign Out</span>
         </button>
@@ -514,17 +602,20 @@ export default function DashboardPage() {
                 <div className="glass-panel" style={styles.explorerSectionCard}>
                   <h3 style={styles.sectionHeader}>Countries</h3>
                   <div style={styles.scrollList}>
-                    {countries.length === 0 ? (
+                    {isDashboardDataLoading ? (
+                      <>
+                        <div className="skeleton-box skeleton-item" />
+                        <div className="skeleton-box skeleton-item" />
+                        <div className="skeleton-box skeleton-item" />
+                      </>
+                    ) : countries.length === 0 ? (
                       <p style={styles.emptyText}>No countries created yet.</p>
                     ) : (
                       countries.map((c) => (
                         <button
                           key={c._id}
                           onClick={() => handleSelectCountry(c)}
-                          style={{
-                            ...styles.listItemBtn,
-                            ...(selectedCountry?._id === c._id ? styles.listItemBtnActive : {})
-                          }}
+                          className={`db-list-item-btn ${selectedCountry?._id === c._id ? 'db-list-item-btn-active' : ''}`}
                         >
                           <FaGlobe color="var(--primary)" />
                           <div style={{ textAlign: 'left' }}>
@@ -541,7 +632,12 @@ export default function DashboardPage() {
                   <div className="glass-panel animate-fade-in" style={{ ...styles.explorerSectionCard, marginTop: '20px' }}>
                     <h3 style={styles.sectionHeader}>Cities in {selectedCountry.name}</h3>
                     <div style={styles.scrollList}>
-                      {cities.filter(city => city.country === selectedCountry._id || (city.country?._id === selectedCountry._id)).length === 0 ? (
+                      {isDashboardDataLoading ? (
+                        <>
+                          <div className="skeleton-box skeleton-item" />
+                          <div className="skeleton-box skeleton-item" />
+                        </>
+                      ) : cities.filter(city => city.country === selectedCountry._id || (city.country?._id === selectedCountry._id)).length === 0 ? (
                         <p style={styles.emptyText}>No cities added in this country.</p>
                       ) : (
                         cities
@@ -550,10 +646,7 @@ export default function DashboardPage() {
                             <button
                               key={ct._id}
                               onClick={() => handleSelectCity(ct)}
-                              style={{
-                                ...styles.listItemBtn,
-                                ...(selectedCity?._id === ct._id ? styles.listItemBtnActive : {})
-                              }}
+                              className={`db-list-item-btn ${selectedCity?._id === ct._id ? 'db-list-item-btn-active' : ''}`}
                             >
                               <FaMapMarkerAlt color="var(--secondary)" />
                               <div style={{ textAlign: 'left' }}>
@@ -594,6 +687,84 @@ export default function DashboardPage() {
                       <div style={styles.infoAlert}>
                         <FaInfoCircle color="var(--primary)" size={16} />
                         <p><strong>Note:</strong> {selectedCity.muslimPopulationNote}</p>
+                      </div>
+                    )}
+
+                    {/* Islamic Companion Services Card */}
+                    {(selectedCity.latitude !== undefined || selectedCity.lat !== undefined) && (
+                      <div 
+                        style={{
+                          marginTop: '16px',
+                          background: 'rgba(6, 78, 59, 0.12)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                        }}
+                        className="glass-panel animate-fade-in"
+                      >
+                        <h4 style={{ color: 'var(--primary)', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', margin: 0 }}>
+                          🕌 Islamic Traveler Companion
+                        </h4>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+                          {/* Qibla Direction */}
+                          {calculateQibla(selectedCity.latitude || selectedCity.lat, selectedCity.longitude || selectedCity.lng) && (() => {
+                            const qibla = calculateQibla(selectedCity.latitude || selectedCity.lat, selectedCity.longitude || selectedCity.lng);
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                <div style={{ fontSize: '20px' }}>🧭</div>
+                                <div>
+                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Qibla Direction</span>
+                                  <strong style={{ fontSize: '12px', color: 'var(--secondary)' }}>{qibla.bearing}° {qibla.cardinal}</strong>
+                                </div>
+                              </div>
+                            );
+                          })()}
+
+                          {/* Coordinates */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                            <div style={{ fontSize: '18px' }}>📍</div>
+                            <div>
+                              <span style={{ fontSize: '9px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coordinates</span>
+                              <strong style={{ fontSize: '11px', color: 'var(--text-primary)' }}>{(selectedCity.latitude || selectedCity.lat || 0).toFixed(2)}°, {(selectedCity.longitude || selectedCity.lng || 0).toFixed(2)}°</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Estimated Prayer Times */}
+                        {estimatePrayerTimes(selectedCity.latitude || selectedCity.lat, selectedCity.longitude || selectedCity.lng) && (() => {
+                          const times = estimatePrayerTimes(selectedCity.latitude || selectedCity.lat, selectedCity.longitude || selectedCity.lng);
+                          return (
+                            <div>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', textTransform: 'uppercase', fontWeight: '600' }}>Estimated Daily Prayer Times:</span>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px', textAlign: 'center' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '4px 2px', borderRadius: '4px' }}>
+                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'block' }}>Fajr</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{times.fajr}</span>
+                                </div>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '4px 2px', borderRadius: '4px' }}>
+                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'block' }}>Dhuhr</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{times.dhuhr}</span>
+                                </div>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '4px 2px', borderRadius: '4px' }}>
+                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'block' }}>Asr</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{times.asr}</span>
+                                </div>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '4px 2px', borderRadius: '4px' }}>
+                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'block' }}>Maghrib</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{times.maghrib}</span>
+                                </div>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '4px 2px', borderRadius: '4px' }}>
+                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'block' }}>Isha</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{times.isha}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
 
@@ -641,6 +812,30 @@ export default function DashboardPage() {
 
                     <div style={styles.tabsDivider}></div>
 
+                    {/* Fun Fact / Trivia Card */}
+                    {selectedCountry && getCountryFunFact(selectedCountry.name) && (
+                      <div 
+                        style={{
+                          background: 'rgba(217, 119, 6, 0.08)',
+                          border: '1px dashed rgba(217, 119, 6, 0.4)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '16px',
+                          marginBottom: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }} 
+                        className="animate-fade-in"
+                      >
+                        <h4 style={{ color: 'var(--secondary)', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          🕌 Cultural Insight & Trivia
+                        </h4>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', lineHeight: '1.5', margin: 0, fontStyle: 'italic' }}>
+                          "{getCountryFunFact(selectedCountry.name)}"
+                        </p>
+                      </div>
+                    )}
+
                     {/* Visa and Culture information */}
                     <div style={styles.countryAdditions} className="country-additions-flex">
                       <div style={styles.additionCol}>
@@ -685,7 +880,13 @@ export default function DashboardPage() {
           {/* ITINERARIES TAB */}
           {activeTab === 'itineraries' && (
             <div>
-              {itineraries.length === 0 ? (
+              {isDashboardDataLoading ? (
+                <div style={styles.cardsGrid}>
+                  <div className="skeleton-box skeleton-card" />
+                  <div className="skeleton-box skeleton-card" />
+                  <div className="skeleton-box skeleton-card" />
+                </div>
+              ) : itineraries.length === 0 ? (
                 <div style={styles.selectPrompt}>
                   <FaCalendarAlt size={48} color="var(--text-muted)" />
                   <h3>No Travel Itineraries</h3>
@@ -695,6 +896,21 @@ export default function DashboardPage() {
                 <div style={styles.cardsGrid}>
                   {itineraries.map((it) => {
                     const countryName = countries.find(c => c._id === it.country || (c._id === it.country?._id))?.name || 'Unknown Country';
+                    
+                    // Sum up expenditures belonging to this itinerary
+                    const itineraryExpenses = expenses.filter(e => e.itinerary === it._id || e.itinerary?._id === it._id);
+                    const totalSpent = itineraryExpenses.reduce((sum, curr) => sum + (curr.amount || 0), 0);
+                    const budget = it.budget || 0;
+                    const spentPercentage = budget > 0 ? Math.min(100, (totalSpent / budget) * 100) : 0;
+                    const isOverBudget = totalSpent > budget;
+                    
+                    let progressColor = 'var(--success)';
+                    if (isOverBudget) {
+                      progressColor = 'var(--danger)';
+                    } else if (totalSpent > budget * 0.75) {
+                      progressColor = 'var(--warning)';
+                    }
+
                     return (
                       <div key={it._id} className="glass-panel-interactive" style={styles.itineraryCard}>
                         <div style={styles.itineraryHeader}>
@@ -715,7 +931,20 @@ export default function DashboardPage() {
 
                         <div style={styles.budgetRow}>
                           <span style={styles.budgetText}>Budget:</span>
-                          <span style={styles.budgetAmount}>${it.budget || 0}</span>
+                          <span style={styles.budgetAmount}>${budget}</span>
+                        </div>
+
+                        {/* Spent vs Budget Progress Bar */}
+                        <div style={{ marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Spent: <strong style={{ color: isOverBudget ? 'var(--danger)' : 'var(--text-primary)' }}>${totalSpent.toFixed(2)}</strong></span>
+                            <span style={{ color: progressColor, fontWeight: '700' }}>
+                              {isOverBudget ? '⚠️ OVER BUDGET' : `${spentPercentage.toFixed(0)}%`}
+                            </span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${spentPercentage}%`, height: '100%', background: progressColor, borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                          </div>
                         </div>
 
                         {/* Shows linked cities if any */}
@@ -773,10 +1002,12 @@ export default function DashboardPage() {
               </div>
 
               {/* Right Column: Expenses List */}
-              <div style={styles.expenseList} style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="glass-panel" style={{ padding: '24px', minHeight: '300px' }}>
                   <h3 style={styles.sectionHeader}>Transaction Log</h3>
-                  {expenses.length === 0 ? (
+                  {isDashboardDataLoading ? (
+                    <div className="skeleton-box skeleton-table" />
+                  ) : expenses.length === 0 ? (
                     <p style={styles.emptyText}>No expenses recorded yet. Click "Log Expense" above.</p>
                   ) : (
                     <div style={styles.tableWrapper}>
@@ -847,7 +1078,13 @@ export default function DashboardPage() {
           {/* LOCAL GUIDES TAB */}
           {activeTab === 'guides' && (
             <div>
-              {guides.length === 0 ? (
+              {isDashboardDataLoading ? (
+                <div style={styles.cardsGrid}>
+                  <div className="skeleton-box skeleton-card" />
+                  <div className="skeleton-box skeleton-card" />
+                  <div className="skeleton-box skeleton-card" />
+                </div>
+              ) : guides.length === 0 ? (
                 <div style={styles.selectPrompt}>
                   <FaCompass size={48} color="var(--text-muted)" />
                   <h3>No Guides Available</h3>

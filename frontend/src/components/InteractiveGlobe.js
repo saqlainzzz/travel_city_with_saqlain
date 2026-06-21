@@ -21,12 +21,24 @@ export default function InteractiveGlobe() {
   const containerRef = useRef(null);
   
   const [worldData, setWorldData] = useState(null);
-  const [rotationX, setRotationX] = useState(-20); // Tilt
-  const [rotationY, setRotationY] = useState(0);
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState(countriesList[0]);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Use refs for values that change on every frame/animation loop or need to be read in the animation loop
+  const rotationRef = useRef({ x: -20, y: 0 });
+  const hoveredCountryRef = useRef(null);
+  const selectedCountryRef = useRef(countriesList[0]);
+
+  // Synchronize state with refs
+  useEffect(() => {
+    selectedCountryRef.current = selectedCountry;
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    hoveredCountryRef.current = hoveredCountry;
+  }, [hoveredCountry]);
 
   const dragRef = useRef({ isDown: false, startX: 0, startY: 0, startRotX: -20, startRotY: 0 });
   const animRef = useRef(null);
@@ -70,8 +82,6 @@ export default function InteractiveGlobe() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    let currentRotY = rotationY;
-    let currentRotX = rotationX;
     let mouseX = 0;
     let mouseY = 0;
 
@@ -83,10 +93,14 @@ export default function InteractiveGlobe() {
     canvas.addEventListener('mousemove', handleMouseMoveGlobal);
 
     const render = () => {
+      let currentRotY;
+      let currentRotX;
+
       // Auto-rotation if user hasn't interacted recently
       if (Date.now() - lastActiveTime.current > 4000) {
-        currentRotY += rotationSpeed;
-        setRotationY(currentRotY);
+        rotationRef.current.y += rotationSpeed;
+        currentRotY = rotationRef.current.y;
+        currentRotX = rotationRef.current.x;
       } else {
         currentRotY = dragRef.current.startRotY;
         currentRotX = dragRef.current.startRotX;
@@ -153,8 +167,8 @@ export default function InteractiveGlobe() {
           ctx.beginPath();
           path(feature);
           
-          const isSelected = selectedCountry && selectedCountry.iso === feature.id;
-          const isHovered = hoveredCountry && hoveredCountry.iso === feature.id;
+          const isSelected = selectedCountryRef.current && selectedCountryRef.current.iso === feature.id;
+          const isHovered = hoveredCountryRef.current && hoveredCountryRef.current.iso === feature.id;
 
           if (isHovered || isSelected) {
             ctx.fillStyle = 'rgba(245, 158, 11, 0.35)'; // Vibrant glowing Gold/Amber
@@ -185,8 +199,8 @@ export default function InteractiveGlobe() {
           ctx.beginPath();
           path(geojsonLine);
 
-          const isHoveredRoute = hoveredCountry && 
-            (from.name === hoveredCountry.name || to.name === hoveredCountry.name);
+          const isHoveredRoute = hoveredCountryRef.current && 
+            (from.name === hoveredCountryRef.current.name || to.name === hoveredCountryRef.current.name);
 
           if (isHoveredRoute) {
             ctx.strokeStyle = 'rgba(245, 158, 11, 0.65)';
@@ -222,7 +236,7 @@ export default function InteractiveGlobe() {
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         const isHovered = dist < 12;
-        const isSelected = selectedCountry && selectedCountry.name === c.name;
+        const isSelected = selectedCountryRef.current && selectedCountryRef.current.name === c.name;
 
         if (isHovered) {
           currentHovered = c;
@@ -268,8 +282,9 @@ export default function InteractiveGlobe() {
       });
 
       // Update hovered state safely
-      if (currentHovered !== hoveredCountry) {
+      if (currentHovered !== hoveredCountryRef.current) {
         setHoveredCountry(currentHovered);
+        hoveredCountryRef.current = currentHovered;
       }
 
       animRef.current = requestAnimationFrame(render);
@@ -282,7 +297,7 @@ export default function InteractiveGlobe() {
       canvas.removeEventListener('mousemove', handleMouseMoveGlobal);
       cancelAnimationFrame(animRef.current);
     };
-  }, [worldData, rotationX, rotationY, hoveredCountry, selectedCountry]);
+  }, [worldData]);
 
   // Handle Dragging / Rotation
   const handleMouseDown = (e) => {
@@ -293,8 +308,8 @@ export default function InteractiveGlobe() {
       isDown: true,
       startX: e.clientX,
       startY: e.clientY,
-      startRotX: rotationX,
-      startRotY: rotationY
+      startRotX: rotationRef.current.x,
+      startRotY: rotationRef.current.y
     };
   };
 
@@ -312,8 +327,8 @@ export default function InteractiveGlobe() {
     // Constraint polar tilt
     nextRotX = Math.max(-50, Math.min(50, nextRotX));
 
-    setRotationX(nextRotX);
-    setRotationY(nextRotY);
+    rotationRef.current.x = nextRotX;
+    rotationRef.current.y = nextRotY;
     dragRef.current.startRotX = nextRotX;
     dragRef.current.startRotY = nextRotY;
     dragRef.current.startX = e.clientX;
@@ -342,8 +357,8 @@ export default function InteractiveGlobe() {
       isDown: true,
       startX: e.touches[0].clientX,
       startY: e.touches[0].clientY,
-      startRotX: rotationX,
-      startRotY: rotationY
+      startRotX: rotationRef.current.x,
+      startRotY: rotationRef.current.y
     };
   };
 
@@ -360,8 +375,8 @@ export default function InteractiveGlobe() {
     
     nextRotX = Math.max(-50, Math.min(50, nextRotX));
 
-    setRotationX(nextRotX);
-    setRotationY(nextRotY);
+    rotationRef.current.x = nextRotX;
+    rotationRef.current.y = nextRotY;
     dragRef.current.startRotX = nextRotX;
     dragRef.current.startRotY = nextRotY;
     dragRef.current.startX = e.touches[0].clientX;
@@ -433,7 +448,7 @@ export default function InteractiveGlobe() {
                   {countriesList.filter(c => c.name !== selectedCountry.name).map((c, index) => (
                     <span 
                       key={index} 
-                      style={globeStyles.routeBadge}
+                      className="globe-route-badge"
                       onClick={() => setSelectedCountry(c)}
                     >
                       ✈️ {c.name}

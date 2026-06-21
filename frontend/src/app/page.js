@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { FaSun, FaMoon } from 'react-icons/fa';
@@ -8,6 +8,7 @@ import InteractiveGlobe from '../components/InteractiveGlobe';
 
 export default function LandingPage() {
   const { user, theme, toggleTheme } = useAuth();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   return (
     <div style={styles.container}>
@@ -27,8 +28,12 @@ export default function LandingPage() {
             {theme === 'dark' ? <FaSun color="#f59e0b" /> : <FaMoon color="#4f46e5" />}
           </button>
           {user ? (
-            <Link href="/dashboard" className="btn-primary">
-              Go to Dashboard
+            <Link 
+              href="/dashboard" 
+              className="btn-primary"
+              onClick={() => setIsRedirecting(true)}
+            >
+              {isRedirecting ? 'Entering...' : 'Go to Dashboard'}
             </Link>
           ) : (
             <>
@@ -46,7 +51,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <header style={styles.hero} className="landing-hero-grid">
         <div style={styles.heroContent} className="glass-panel landing-hero-content-floating">
-          <span style={styles.badge}>🌟 The Ultimate City Explorer Boilerplate</span>
+          <span style={styles.badge}>🌟 Premium City Explorer & Itinerary Planner</span>
           <h1 style={styles.title}>
             Plan, Explore & Log Your <br />
             <span style={styles.gradientText}>Dream Journeys</span>
@@ -56,15 +61,20 @@ export default function LandingPage() {
           </p>
           <div style={styles.ctaGroup}>
             {user ? (
-              <Link href="/dashboard" className="btn-primary" style={{ padding: '14px 28px', fontSize: '16px' }}>
-                Enter Your Dashboard
+              <Link 
+                href="/dashboard" 
+                className="btn-primary" 
+                style={{ padding: '8px 16px', fontSize: '13px' }}
+                onClick={() => setIsRedirecting(true)}
+              >
+                {isRedirecting ? 'Opening Dashboard...' : 'Enter Your Dashboard'}
               </Link>
             ) : (
               <>
-                <Link href="/signup" className="btn-primary" style={{ padding: '14px 28px', fontSize: '16px' }}>
+                <Link href="/signup" className="btn-primary" style={{ padding: '8px 16px', fontSize: '13px' }}>
                   Create Free Account
                 </Link>
-                <Link href="/login" className="btn-secondary" style={{ padding: '14px 28px', fontSize: '16px' }}>
+                <Link href="/login" className="btn-secondary" style={{ padding: '8px 16px', fontSize: '13px' }}>
                   Explore Features
                 </Link>
               </>
@@ -138,7 +148,7 @@ const styles = {
     alignItems: 'center',
     padding: '24px 8%',
     borderBottom: '1px solid var(--border-color)',
-    background: 'rgba(5, 11, 20, 0.5)',
+    background: 'var(--bg-nav, rgba(5, 11, 20, 0.5))',
     backdropFilter: 'blur(10px)',
     position: 'sticky',
     top: 0,
@@ -172,16 +182,16 @@ const styles = {
     overflow: 'hidden',
     display: 'flex',
     alignItems: 'center',
-    padding: '80px 8% 40px',
+    padding: '60px 6% 30px',
   },
   heroContent: {
     position: 'relative',
     zIndex: 10,
-    maxWidth: '540px',
-    padding: '36px',
-    borderRadius: 'var(--radius-lg)',
-    background: 'rgba(6, 78, 59, 0.25)',
-    border: '1px solid rgba(217, 119, 6, 0.2)',
+    maxWidth: '360px',
+    padding: '20px',
+    borderRadius: 'var(--radius-md)',
+    background: 'rgba(6, 78, 59, 0.35)',
+    border: '1px solid rgba(217, 119, 6, 0.25)',
     backdropFilter: 'blur(20px)',
     boxShadow: 'var(--shadow-lg)',
     animation: 'fadeIn 0.6s ease forwards',
@@ -198,21 +208,21 @@ const styles = {
   },
   badge: {
     display: 'inline-block',
-    padding: '6px 16px',
+    padding: '4px 12px',
     borderRadius: '100px',
     background: 'rgba(99, 102, 241, 0.1)',
     border: '1px solid rgba(99, 102, 241, 0.2)',
     color: 'var(--primary)',
-    fontSize: '13px',
+    fontSize: '11px',
     fontWeight: '600',
-    marginBottom: '24px',
+    marginBottom: '12px',
   },
   title: {
-    fontSize: '56px',
+    fontSize: '26px',
     fontWeight: '800',
-    lineHeight: '1.15',
-    letterSpacing: '-1px',
-    marginBottom: '24px',
+    lineHeight: '1.2',
+    letterSpacing: '-0.5px',
+    marginBottom: '12px',
   },
   gradientText: {
     background: 'var(--gradient-primary)',
@@ -220,10 +230,10 @@ const styles = {
     WebkitTextFillColor: 'transparent',
   },
   subtitle: {
-    fontSize: '18px',
-    lineHeight: '1.6',
+    fontSize: '13px',
+    lineHeight: '1.5',
     color: 'var(--text-secondary)',
-    marginBottom: '40px',
+    marginBottom: '20px',
   },
   ctaGroup: {
     display: 'flex',
@@ -285,6 +295,6 @@ const styles = {
     fontSize: '14px',
     color: 'var(--text-muted)',
     borderTop: '1px solid var(--border-color)',
-    background: 'rgba(5, 11, 20, 0.8)',
+    background: 'var(--bg-secondary)',
   },
 };

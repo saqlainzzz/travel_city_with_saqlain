@@ -3,6 +3,7 @@
   --bg-secondary: #064e3b; /* Dark Green */
   --bg-card: rgba(6, 78, 59, 0.45); /* Translucent Green */
   --bg-card-hover: rgba(4, 120, 87, 0.6);
+  --bg-nav: rgba(2, 44, 34, 0.7);
   --border-color: rgba(217, 119, 6, 0.15); /* Soft Gold border */
   --border-hover: rgba(245, 158, 11, 0.5); /* Glowing Gold border */
   
@@ -43,27 +44,28 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #f0fdf4; /* Minty light background */
-  --bg-secondary: #d1fae5;
-  --bg-card: rgba(255, 255, 255, 0.85);
-  --bg-card-hover: rgba(255, 255, 255, 0.95);
-  --border-color: rgba(4, 120, 87, 0.1);
-  --border-hover: rgba(217, 119, 6, 0.5);
+  --bg-primary: #f4fbf7; /* Clean, very light mint/white background */
+  --bg-secondary: #e6f6ed; /* Slightly darker mint */
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-card-hover: rgba(255, 255, 255, 0.98);
+  --bg-nav: rgba(255, 255, 255, 0.9); /* Solid white/mint background for upperstrip */
+  --border-color: rgba(6, 78, 59, 0.09); /* Soft dark green border */
+  --border-hover: rgba(217, 119, 6, 0.45);
   
-  --text-primary: #064e3b;
-  --text-secondary: #047857;
-  --text-muted: #10b981;
+  --text-primary: #064e3b; /* High-contrast Deep Green for headers and main text */
+  --text-secondary: #0a6c4f; /* Medium green for body and subtext */
+  --text-muted: #15803d; /* Safe dark green for muted text */
   
-  --primary: #059669;
+  --primary: #059669; /* Rich Emerald */
   --primary-glow: rgba(5, 150, 105, 0.15);
-  --secondary: #d97706;
+  --secondary: #d97706; /* Warm Amber/Gold */
   --success: #059669;
   --danger: #dc2626;
   --warning: #d97706;
   
   --gradient-primary: linear-gradient(135deg, #059669 0%, #d97706 100%);
   --gradient-secondary: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
-  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
   
   --shadow-sm: 0 2px 8px -2px rgba(4, 120, 87, 0.05);
   --shadow-md: 0 8px 30px -4px rgba(4, 120, 87, 0.08);
@@ -630,7 +632,7 @@ a {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1150px) {
   .explorer-layout-flex {
     flex-direction: column !important;
   }
@@ -676,4 +678,163 @@ a {
     height: 450px !important;
     margin-bottom: 20px !important;
   }
+}
+
+/* ==========================================================================
+   INTERACTIVE BUTTONS, INTERFACES, & SKELETONS (RESOLVING HOVER BUG)
+   ========================================================================== */
+
+.db-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+.db-menu-item:hover {
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--text-primary);
+}
+[data-theme="light"] .db-menu-item:hover {
+  background: rgba(6, 78, 59, 0.05);
+}
+.db-menu-item-active {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+[data-theme="light"] .db-menu-item-active {
+  background: rgba(5, 150, 105, 0.1) !important;
+  border-color: rgba(5, 150, 105, 0.2) !important;
+}
+
+.db-list-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+[data-theme="light"] .db-list-item-btn {
+  background: rgba(6, 78, 59, 0.02);
+}
+.db-list-item-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-hover);
+  transform: translateX(2px);
+}
+[data-theme="light"] .db-list-item-btn:hover {
+  background: rgba(6, 78, 59, 0.05);
+}
+.db-list-item-btn-active {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: var(--primary) !important;
+}
+[data-theme="light"] .db-list-item-btn-active {
+  background: rgba(5, 150, 105, 0.08) !important;
+}
+
+.db-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+[data-theme="light"] .db-user-card {
+  background: rgba(6, 78, 59, 0.03);
+}
+
+.db-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: auto;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+.db-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: var(--danger);
+}
+
+.globe-route-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 100px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.globe-route-badge:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+/* Shimmering Skeleton Loader */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-box {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.07) 50%, rgba(255, 255, 255, 0.02) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+[data-theme="light"] .skeleton-box {
+  background: linear-gradient(90deg, rgba(6, 78, 59, 0.02) 25%, rgba(6, 78, 59, 0.06) 50%, rgba(6, 78, 59, 0.02) 75%);
+  background-size: 200% 100%;
+}
+.skeleton-item {
+  height: 48px;
+  width: 100%;
+  margin-bottom: 8px;
+  display: block;
+}
+.skeleton-card {
+  height: 180px;
+  width: 100%;
+  margin-bottom: 16px;
+  display: block;
+  border-radius: var(--radius-md);
+}
+.skeleton-table {
+  height: 220px;
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-md);
 }
