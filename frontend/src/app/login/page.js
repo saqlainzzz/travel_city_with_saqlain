@@ -84,7 +84,7 @@ export default function LoginPage() {
         </form>
 
         <div style={styles.footer}>
-          <span style={styles.footerText}>Don't have an account? </span>
+          <span style={styles.footerText}>Don&apos;t have an account? </span>
           <Link href="/signup" style={styles.link}>
             Sign Up
           </Link>

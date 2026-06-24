@@ -1192,7 +1192,7 @@ export default function DashboardPage() {
                           🕌 Cultural Insight & Trivia
                         </h4>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', lineHeight: '1.5', margin: 0, fontStyle: 'italic' }}>
-                          "{getCountryFunFact(selectedCountry.name)}"
+                          &ldquo;{getCountryFunFact(selectedCountry.name)}&rdquo;
                         </p>
                       </div>
                     )}
@@ -1350,7 +1350,7 @@ export default function DashboardPage() {
                 <div style={styles.selectPrompt}>
                   <FaCalendarAlt size={48} color="var(--text-muted)" />
                   <h3>No Travel Itineraries</h3>
-                  <p>You haven't planned any trips yet. Click the "Build Itinerary" button on the top right to start planning.</p>
+                  <p>You haven&apos;t planned any trips yet. Click the &quot;Build Itinerary&quot; button on the top right to start planning.</p>
                 </div>
               ) : (
                 <div style={styles.cardsGrid}>
@@ -1468,7 +1468,7 @@ export default function DashboardPage() {
                   {isDashboardDataLoading ? (
                     <div className="skeleton-box skeleton-table" />
                   ) : expenses.length === 0 ? (
-                    <p style={styles.emptyText}>No expenses recorded yet. Click "Log Expense" above.</p>
+                    <p style={styles.emptyText}>No expenses recorded yet. Click &quot;Log Expense&quot; above.</p>
                   ) : (
                     <div style={styles.tableWrapper}>
                       <table style={styles.table}>

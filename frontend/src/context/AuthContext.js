@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }) => {
     // Check if token exists and load user
     const savedUser = api.auth.getCurrentUser();
     if (savedUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(savedUser);
     }
     setLoading(false);

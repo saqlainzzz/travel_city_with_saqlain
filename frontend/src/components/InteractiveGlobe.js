@@ -42,8 +42,12 @@ export default function InteractiveGlobe() {
 
   const dragRef = useRef({ isDown: false, startX: 0, startY: 0, startRotX: -20, startRotY: 0 });
   const animRef = useRef(null);
-  const lastActiveTime = useRef(Date.now());
+  const lastActiveTime = useRef(0);
   const rotationSpeed = 0.12; // Degrees per frame
+
+  useEffect(() => {
+    lastActiveTime.current = Date.now();
+  }, []);
 
   // Fetch World Boundaries TopoJSON
   useEffect(() => {
